@@ -7,12 +7,12 @@ Features:
 - Hinge joints
 - Ball joints
 - Uses Panda3D's Bone system, so should be relatively easy to use with an existing skeleton. See usage notes below.
+- Pure python, no dependencies beyond Panda3D
 
-Not implemented/Not tested:
+Not implemented:
 ----------------
 - Other constraints
 - Target rotation (only target position is currently taken into account)
-
 
 Running Sample:
 ---------------
