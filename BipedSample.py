@@ -220,7 +220,6 @@ class Biped():
         update = curWalkDist
         update += angClamped*0.5
         self.walkCycle.updateTime( update )
-        print(self.walkCycle.stepRequired)
 
         if self.walkCycle.stepRequired[0]:
             #self.footTargetLeft.setPos( self.plannedFootTargetLeft.getPos( render ) )
