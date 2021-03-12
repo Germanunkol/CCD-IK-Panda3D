@@ -1,6 +1,7 @@
 from panda3d.core import *
 from IKChain import IKChain
 from Utils import *
+from WalkCycle import WalkCycle
 
 class Biped():
 
@@ -20,13 +21,16 @@ class Biped():
 
         ##################################
         # Set up right leg:
-        self.ikChainLegLeft = IKChain( hipNode )
+        legRootLeft = hipNode.attachNewNode( "LegRootLeft" )
+        legRootLeft.setHpr( 90, 0, 0 )
+
+        self.ikChainLegLeft = IKChain( legRootLeft )
 
         # Hip:
         bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.13,
-                minAng = math.pi*0.4,
-                maxAng = math.pi*0.6,
-                rotAxis = LVector3f.unitZ()
+                minAng = -math.pi*0.2,
+                maxAng = math.pi*0.2,
+                rotAxis = None
                 )
 
         # We want a fixed 90° angle between the hip node and the thigh, so
@@ -62,13 +66,16 @@ class Biped():
 
         ##################################
         # Set up right leg:
-        self.ikChainLegRight = IKChain( hipNode )
+        legRootRight = hipNode.attachNewNode( "LegRootRight" )
+        legRootRight.setHpr( -90, 0, 0 )
+
+        self.ikChainLegRight = IKChain( legRootRight )
 
         # Hip:
         bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.13,
-                minAng = -math.pi*0.6,
-                maxAng = -math.pi*0.4,
-                rotAxis = LVector3f.unitZ()
+                minAng = -math.pi*0.2,
+                maxAng = math.pi*0.2,
+                rotAxis = None
                 )
 
         # We want a fixed 90° angle between the hip node and the thigh, so
@@ -104,26 +111,45 @@ class Biped():
         #################################################
         # Foot targets:
 
+        # Set up two targets that the foot should reach:
         self.footTargetLeft = render.attachNewNode("FootTargetLeft")
         self.footTargetRight = render.attachNewNode("FootTargetRight")
         geom = createAxes( 0.1 )
+
         self.footTargetLeft.attachNewNode( geom )
         self.footTargetRight.attachNewNode( geom )
         self.ikChainLegLeft.setTarget( self.footTargetLeft )
         self.ikChainLegRight.setTarget( self.footTargetRight )
+
+        # Set up two nodes which stay (rigidly) infront of the body, on the floor.
+        # Whenever a leg needs to take a step, the target will be placed on this position:
+        self.plannedFootTargetLeft = self.torsoNode.attachNewNode( "PlannedFootTargetLeft" )
+        self.plannedFootTargetRight = self.torsoNode.attachNewNode( "PlannedFootTargetRight" )
+        stepDist = 0.15
+        self.plannedFootTargetLeft.setPos( -0.15, stepDist, -self.torsoHeight )
+        self.plannedFootTargetRight.setPos( 0.15, stepDist, -self.torsoHeight )
+        self.plannedFootTargetLeft.attachNewNode( geom )
+        self.plannedFootTargetRight.attachNewNode( geom )
 
         #################################################
 
         self.targetNode = render.attachNewNode( "WalkTarget" )
         geom = createAxes( 0.2 )
         self.targetNode.attachNewNode( geom )
-        self.walkSpeed = 1.5  # m/s
+        self.walkSpeed = 1  # m/s
         self.turnSpeed = 1
         self.newRandomTarget()
+
+        self.walkCycle = WalkCycle( 2, 0.75 )
         
         base.taskMgr.add( self.walk, "BipedWalk")
 
     def walk( self, task ):
+
+        #############################
+        # Update body:
+
+        prevPos = self.torsoNode.getPos()
 
         diff = self.targetNode.getPos( self.torsoNode )
         diff.z = 0
@@ -132,6 +158,7 @@ class Biped():
         axis = LVector3f.unitY().cross( diffN )
         axis.normalize()
         maxRot = self.turnSpeed*globalClock.getDt()
+        angClamped = 0
         if axis.length() > 0.999:
             # Limit angle:
             angClamped = max( -maxRot, min( maxRot, ang ) )
@@ -148,7 +175,21 @@ class Biped():
                 step = diff
             step = self.torsoNode.getQuat().xform( step )
             self.torsoNode.setPos( self.torsoNode.getPos() + step )
- 
+
+
+        #############################
+        # Update legs:
+
+        update = (prevPos - self.torsoNode.getPos()).length()
+        update += angClamped*0.3
+        self.walkCycle.updateTime( update )
+
+        if self.walkCycle.stepRequired[0]:
+            self.footTargetLeft.setPos( self.plannedFootTargetLeft.getPos( render ) )
+            self.walkCycle.step( 0 )
+        if self.walkCycle.stepRequired[1]:
+            self.footTargetRight.setPos( self.plannedFootTargetRight.getPos( render ) )
+            self.walkCycle.step( 1 )
 
         self.ikChainLegLeft.updateIK()
         self.ikChainLegRight.updateIK()
