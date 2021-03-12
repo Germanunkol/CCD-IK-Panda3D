@@ -14,14 +14,20 @@ Not implemented:
 - Other constraints
 - Target rotation (only target position is currently taken into account)
 
-Running Sample:
+Running Samples:
 ---------------
+In all samples, use WASD to move and middle mouse button to rotate.
+
+The Reacher sample shows how to set up a simple IK chain with constraints which reaches for a moving target point:
 
 ```
-python3 IKChain.py
+python3 ReacherSample.py
 ```
 
-Use WASD to move, middle mouse button to rotate
+The Biped sample shows a very basic humanoid, where the legs are placed by IK. The basic character setup is: The root is a "torso" node. To this, a hip node is rigidly attached. There are two legs, each is its own IKChain. To let the character walk, the torso node is moved, and everything else moves with it.
+While the torso moves, the legs have target points on the ground. The IK makes sure that they stay attached to these points, even when the torso moves. Periodically, the legs are moved to a new target to take a step. This new target point is always a point projected onto the floor in front of the body. How often a step is taken and how far infront of the character the new target position is depends on the movement speed of the character.
+
+Press + and - to speed the character up or slow it down. Note that this is very simplified - the step length should likely be increased for higher speeds.
 
 Usage notes:
 ------------

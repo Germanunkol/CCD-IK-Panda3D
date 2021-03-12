@@ -35,7 +35,6 @@ class WalkCycle():
 
     def updateTime( self, dt ):
         self.cycleTime += dt
-        print(self.cycleTime, self.cycleDuration)
         if self.cycleTime > self.cycleDuration:
             self.movedLegsThisCycle = [False]*self.numLegs
             self.cycleTime = self.cycleTime % self.cycleDuration
