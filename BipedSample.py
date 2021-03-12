@@ -156,6 +156,20 @@ class Biped():
         #################################################
 
         base.taskMgr.add( self.walk, "BipedWalk")
+        base.accept( "+", self.speedUp )
+        base.accept( "-", self.slowDown )
+
+    def speedUp( self ):
+        self.walkSpeed += 0.5
+        self.walkSpeed = min(self.walkSpeed, 3)
+        self.turnSpeed = self.walkSpeed*2
+        self.legMovementSpeed = self.walkSpeed*3
+
+    def slowDown( self ):
+        self.walkSpeed -= 0.5
+        self.walkSpeed = max(self.walkSpeed, 0)
+        self.turnSpeed = self.walkSpeed*2
+        self.legMovementSpeed = self.walkSpeed*3
 
     def walk( self, task ):
 
@@ -197,14 +211,16 @@ class Biped():
 
         # Move planned foot target further forward (longer steps) when character is
         # walking faster:
-        stepDist = curWalkDist*0.15/globalClock.dt
+        stepDist = curWalkDist*0.1/globalClock.dt
         self.plannedFootTargetLeft.setPos( -0.15, stepDist, -self.torsoHeight )
         self.plannedFootTargetRight.setPos( 0.15, stepDist, -self.torsoHeight )
 
         # Update the walkcycle to determine if a step needs to be taken:
+        #update = curWalkDist*0.1/globalClock.dt
         update = curWalkDist
         update += angClamped*0.5
         self.walkCycle.updateTime( update )
+        print(self.walkCycle.stepRequired)
 
         if self.walkCycle.stepRequired[0]:
             #self.footTargetLeft.setPos( self.plannedFootTargetLeft.getPos( render ) )
