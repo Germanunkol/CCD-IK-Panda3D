@@ -1,4 +1,9 @@
+# Simple helper class which keeps a list of times for each leg and determines whether they should
+# be moved. Must be updated every frame via the update time.
 
+# Note that "Durations" and "Times" in this class could also be named "distances" instead, they
+# don't really need to be times - usually what you pass to updateTime() should actually increase
+# when a character walks faster.
 class WalkCycle():
 
     def __init__( self, numLegs, cycleDuration ):

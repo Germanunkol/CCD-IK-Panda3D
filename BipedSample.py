@@ -20,7 +20,19 @@ class Biped():
         hipNode.setPos( 0, 0, -0.6 )
 
         ##################################
+        # Set up body movement:
+
+        self.targetNode = render.attachNewNode( "WalkTarget" )
+        geom = createAxes( 0.2 )
+        self.targetNode.attachNewNode( geom )
+        self.walkSpeed = 1  # m/s
+        self.turnSpeed = 2
+        self.newRandomTarget()
+
+        ##################################
         # Set up right leg:
+
+        # First, rotate 90 degrees outwards:
         legRootLeft = hipNode.attachNewNode( "LegRootLeft" )
         legRootLeft.setHpr( 90, 0, 0 )
 
@@ -53,7 +65,7 @@ class Biped():
         # Shin:
         bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.55,
                 minAng = 0,
-                maxAng = math.pi*0.3,
+                maxAng = math.pi*0.6,
                 rotAxis = LVector3f.unitZ(),
                 parentBone = bone
                 )
@@ -66,6 +78,8 @@ class Biped():
 
         ##################################
         # Set up right leg:
+
+        # First, rotate 90 degrees outwards:
         legRootRight = hipNode.attachNewNode( "LegRootRight" )
         legRootRight.setHpr( -90, 0, 0 )
 
@@ -97,7 +111,7 @@ class Biped():
         
         # Shin:
         bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.55,
-                minAng = -math.pi*0.3,
+                minAng = -math.pi*0.6,
                 maxAng = 0,
                 rotAxis = LVector3f.unitZ(),
                 parentBone = bone
@@ -125,23 +139,22 @@ class Biped():
         # Whenever a leg needs to take a step, the target will be placed on this position:
         self.plannedFootTargetLeft = self.torsoNode.attachNewNode( "PlannedFootTargetLeft" )
         self.plannedFootTargetRight = self.torsoNode.attachNewNode( "PlannedFootTargetRight" )
+
         stepDist = 0.15
         self.plannedFootTargetLeft.setPos( -0.15, stepDist, -self.torsoHeight )
         self.plannedFootTargetRight.setPos( 0.15, stepDist, -self.torsoHeight )
         self.plannedFootTargetLeft.attachNewNode( geom )
         self.plannedFootTargetRight.attachNewNode( geom )
 
+        self.legMovementSpeed = self.walkSpeed*3
+
+        self.stepLeft = False
+        self.stepRight = False
+        
+        self.walkCycle = WalkCycle( 2, 0.75 )
+
         #################################################
 
-        self.targetNode = render.attachNewNode( "WalkTarget" )
-        geom = createAxes( 0.2 )
-        self.targetNode.attachNewNode( geom )
-        self.walkSpeed = 1  # m/s
-        self.turnSpeed = 1
-        self.newRandomTarget()
-
-        self.walkCycle = WalkCycle( 2, 0.75 )
-        
         base.taskMgr.add( self.walk, "BipedWalk")
 
     def walk( self, task ):
@@ -176,20 +189,51 @@ class Biped():
             step = self.torsoNode.getQuat().xform( step )
             self.torsoNode.setPos( self.torsoNode.getPos() + step )
 
+        # Calculate how far we've walked this frame:
+        curWalkDist = (prevPos - self.torsoNode.getPos()).length()
 
         #############################
         # Update legs:
 
-        update = (prevPos - self.torsoNode.getPos()).length()
-        update += angClamped*0.3
+        # Move planned foot target further forward (longer steps) when character is
+        # walking faster:
+        stepDist = curWalkDist*0.15/globalClock.dt
+        self.plannedFootTargetLeft.setPos( -0.15, stepDist, -self.torsoHeight )
+        self.plannedFootTargetRight.setPos( 0.15, stepDist, -self.torsoHeight )
+
+        # Update the walkcycle to determine if a step needs to be taken:
+        update = curWalkDist
+        update += angClamped*0.5
         self.walkCycle.updateTime( update )
 
         if self.walkCycle.stepRequired[0]:
-            self.footTargetLeft.setPos( self.plannedFootTargetLeft.getPos( render ) )
+            #self.footTargetLeft.setPos( self.plannedFootTargetLeft.getPos( render ) )
             self.walkCycle.step( 0 )
+            self.stepLeft = True
         if self.walkCycle.stepRequired[1]:
-            self.footTargetRight.setPos( self.plannedFootTargetRight.getPos( render ) )
+            #self.footTargetRight.setPos( self.plannedFootTargetRight.getPos( render ) )
             self.walkCycle.step( 1 )
+            self.stepRight = True
+
+        if self.stepLeft:
+            diff = self.plannedFootTargetLeft.getPos(render) - self.footTargetLeft.getPos()
+            legMoveDist = self.legMovementSpeed*globalClock.dt
+            if diff.length() < legMoveDist:
+                self.footTargetLeft.setPos( self.plannedFootTargetLeft.getPos( render ) )
+                self.stepLeft = False
+            else:
+                moved = self.footTargetLeft.getPos() + diff.normalized()*legMoveDist
+                self.footTargetLeft.setPos( moved )
+
+        if self.stepRight:
+            diff = self.plannedFootTargetRight.getPos(render) - self.footTargetRight.getPos()
+            legMoveDist = self.legMovementSpeed*globalClock.dt
+            if diff.length() < legMoveDist:
+                self.footTargetRight.setPos( self.plannedFootTargetRight.getPos( render ) )
+                self.stepRight = False
+            else:
+                moved = self.footTargetRight.getPos() + diff.normalized()*legMoveDist
+                self.footTargetRight.setPos( moved )
 
         self.ikChainLegLeft.updateIK()
         self.ikChainLegRight.updateIK()
