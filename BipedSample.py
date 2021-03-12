@@ -262,7 +262,7 @@ class Biped():
         self.targetNode.setPos(
                 LVector3f( random.random()*10-5,
                     random.random()*10-5,
-                    self.torsoHeight ) )
+                    0 ) )
 
 
 
