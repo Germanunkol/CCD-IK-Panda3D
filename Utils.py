@@ -28,7 +28,7 @@ def sign( x ):
     else:
         return 0
 
-def createAxes( size, bothways=False, thickness=1 ):
+def createAxes( size, bothways=False, thickness=1, xRay=False ):
 
     lines = LineSegs()
     lines.setThickness( thickness )
@@ -53,7 +53,7 @@ def createAxes( size, bothways=False, thickness=1 ):
     else:
         lines.moveTo( 0, 0, 0 )
     lines.drawTo( 0, 0, size )
-    
+
     geom = lines.create()
     return geom
 

@@ -39,7 +39,7 @@ class Biped():
         self.ikChainLegLeft = IKChain( legRootLeft )
 
         # Hip:
-        bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.13,
+        bone = self.ikChainLegLeft.addBone( offset=LVector3f.zero(),
                 minAng = -math.pi*0.2,
                 maxAng = math.pi*0.2,
                 rotAxis = None
@@ -47,7 +47,7 @@ class Biped():
 
         # We want a fixed 90° angle between the hip node and the thigh, so
         # rotate down:
-        bone = self.ikChainLegLeft.addBone( offset=LVector3f.zero(),
+        bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.13,
                 minAng = -math.pi*0.5,
                 maxAng = -math.pi*0.5,
                 rotAxis = LVector3f.unitX(),
@@ -70,6 +70,16 @@ class Biped():
                 parentBone = bone
                 )
 
+        # Foot:
+        #bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.55,
+        #        minAng = math.pi*0.5,
+        #        maxAng = math.pi*0.5,
+        #        rotAxis = LVector3f.unitZ(),
+        #        parentBone = bone
+        #        )
+
+
+
         # Required!
         self.ikChainLegLeft.finalize()
 
@@ -86,7 +96,7 @@ class Biped():
         self.ikChainLegRight = IKChain( legRootRight )
 
         # Hip:
-        bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.13,
+        bone = self.ikChainLegRight.addBone( offset=LVector3f.zero(),
                 minAng = -math.pi*0.2,
                 maxAng = math.pi*0.2,
                 rotAxis = None
@@ -94,7 +104,7 @@ class Biped():
 
         # We want a fixed 90° angle between the hip node and the thigh, so
         # rotate down:
-        bone = self.ikChainLegRight.addBone( offset=LVector3f.zero(),
+        bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.13,
                 minAng = -math.pi*0.5,
                 maxAng = -math.pi*0.5,
                 rotAxis = LVector3f.unitX(),
@@ -111,8 +121,8 @@ class Biped():
         
         # Shin:
         bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.55,
-                minAng = -math.pi*0.6,
-                maxAng = 0,
+                minAng = 0,
+                maxAng = math.pi*0.6,
                 rotAxis = LVector3f.unitZ(),
                 parentBone = bone
                 )
@@ -121,6 +131,10 @@ class Biped():
         self.ikChainLegRight.finalize()
 
         self.ikChainLegRight.debugDisplay()
+
+
+        self.ikChainLegLeft.updateIK()
+        self.ikChainLegRight.updateIK()
 
         #################################################
         # Foot targets:
@@ -280,6 +294,7 @@ if __name__ == "__main__":
 
             ShowBase.__init__(self)
             base.disableMouse()
+            base.setFrameRateMeter(True)
 
             wp = WindowProperties()
             wp.setSize(1800, 960)

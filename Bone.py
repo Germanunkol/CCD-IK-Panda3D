@@ -1,3 +1,4 @@
+import random
 
 class Bone():
 
@@ -15,3 +16,13 @@ class Bone():
         self.controlNode = None
         self.exposedNode = None
         self.ikNode = None
+        self.children = []
+        if parent:
+            self.parent.addChild( self )
+    
+        self.col = (random.random(), random.random(), random.random())
+
+    def addChild( self, child ):
+        if not child in self.children:
+            self.children.append( child )
+

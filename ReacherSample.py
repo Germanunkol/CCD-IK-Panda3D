@@ -11,6 +11,7 @@ if __name__ == "__main__":
         def __init__(self):
             ShowBase.__init__(self)
             base.disableMouse()
+            base.setFrameRateMeter(True)
 
             wp = WindowProperties()
             wp.setSize(1800, 960)
@@ -23,16 +24,18 @@ if __name__ == "__main__":
             axes = createAxes( 1000, bothways=True, thickness=3 )
             render.attachNewNode( axes )
 
+            root = render.attachNewNode("Root")
+            root.setPos( 1, 1, 1 )
             #
-            self.ikChain = IKChain( render )
+            self.ikChain = IKChain( root )
 
-            bone = self.ikChain.addBone( offset=LVector3f.unitY(),
+            bone = self.ikChain.addBone( offset=LVector3f.zero(),
                     minAng = -math.pi*0.3,
                     maxAng = math.pi*0.3,
                     rotAxis = LVector3f.unitX()
                     )
 
-            for i in range( 3 ):
+            for i in range( 5 ):
                 bone = self.ikChain.addBone( offset=LVector3f.unitY(),
                         minAng = -math.pi*0.3,
                         maxAng = math.pi*0.3,
@@ -75,7 +78,10 @@ if __name__ == "__main__":
 
         def moveTarget( self, task ):
             if self.animateTarget:
-                self.ikTarget.setPos( 2.5*math.sin(task.time), 5*math.sin(task.time*1.6+2), math.cos(task.time*1.6+2) )
+                speed = 0.1
+                self.ikTarget.setPos( 2.5*math.sin(speed*task.time),
+                        5*math.sin(speed*task.time*1.6+2),
+                        math.cos(speed*task.time*1.6+2) )
 
             self.ikChain.updateIK()
             return task.cont
