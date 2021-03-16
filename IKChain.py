@@ -21,12 +21,16 @@ class IKChain():
         else:
             self.char = char
             self.bundle = self.char.getBundle(0)
-            self.skeleton = NodePath(self.char).find("<skeleton>")
+            #self.skeleton = NodePath(self.char).find("<skeleton>")
             #self.root = self.char.findJoint( rootName )
             #if not self.root:
             #    raise Exception( "Joint '" + rootName + "' not found in character!" )
 
-        self.actor = actor
+        if actor:
+            self.actor = actor
+        else:
+            self.actor = None
+
         self.charNodePath = NodePath(self.char)
 
         self.bones = []
@@ -36,32 +40,70 @@ class IKChain():
         self.debugDisplayEnabled = False
         self.debugDisplayNodes = []
 
-    def fromArmature( character, parent, actor, jointNameList):
+    def fromArmature( character, parent, actor, jointList ):
 
         chain = IKChain( parent, char=character, actor=actor )
 
         bone = None
-        parentJoint = chain.skeleton
-        for jointName in jointNameList:
+        #parentJoint = chain.skeleton
+        jointNames = [j["name"] for j in jointList]
+        for j in jointList:
+
+            # Get the name of the current bone:
+            jointName = j["name"]
+
+            # Get the type of constraint
+            axis = "auto"
+            if "axis" in j.keys():
+                axis = j["axis"]
+            # Get the constraint values:
+            minAng = -math.pi
+            if "minAng" in j.keys():
+                minAng = j["minAng"]
+            maxAng = -math.pi
+            if "maxAng" in j.keys():
+                maxAng = j["maxAng"]
+
             joint = character.findJoint( jointName )
             if not joint:
                 raise Exception("Could not find joint with name " + jointName + " in character!")
        
-            # The "offset" is the translation of the parent joint:
-            parentMat = parentJoint.getValue()
-            t = parentMat.getRow3(3)
+            # Retrieve the transform of the joint. We'll treat this as the "base" pose of the
+            # transform and store it for later use.
+            mat = joint.getTransform()
 
-            # The rotation is determined by this joint:
-            mat = joint.getValue()
-            rot = Quat()
-            rot.setFromMatrix( mat )
-            rot.normalize()
-            axis = rot.getAxisNormalized()
-            ang = rot.getAngleRad()
-            bone = chain.addBone( t, rotAxis=axis, minAng=ang-0.6*math.pi, maxAng=ang+0.6*math.pi,
+            # Get the translation:
+            t = mat.getRow3(3)
+
+            # Set up rotation axis:
+            if axis == None:    # No axis, i.e. the constraint should be a ball joint:
+                pass
+
+            elif isinstance( axis, LVector3f ): # Axis was given, use it:
+                if axis.length() <  1e-9:
+                    raise Exception("Axis given for joint " + jointName + " has length zero")
+                axis = axis.normalized()
+
+            elif axis == "auto":# Ask the system to automatically determine rotation axis:
+
+                # Try to get the rotation from the joint transform:
+                rot = Quat()
+                rot.setFromMatrix( mat )
+                rot.normalize()
+                axis = rot.getAxisNormalized()
+                ang = rot.getAngleRad()
+
+                 # If the angle is zero, then this axis cannot be trusted. 
+                if abs(ang) < 1e-8:
+                    raise Exception("Cannot automatically determine rotation axis for joint " + jointName + " (its angle is zero)! Please specify a rotation axis manually, or set it to 'None'.")
+
+            else:
+                raise Exception("Axis or joint " + jointName + " invalid (must be None, 'auto', or a LVector3f)")
+
+            bone = chain.addBone( t, rotAxis=axis, minAng=minAng, maxAng=maxAng,
                     parentBone=bone,
                     joint=joint )
-            parentJoint = joint
+            #parentJoint = joint
 
         chain.finalize()
         return chain
@@ -82,7 +124,6 @@ class IKChain():
             translate = Mat4.translateMat(offset)
             transform = rot*translate
         
-
             if parentBone is None:
                 joint = CharacterJoint( self.char, self.bundle, self.skeleton, name, transform )
             else:
@@ -102,7 +143,7 @@ class IKChain():
         if not self.actor:
             # Create an actor so we can expose nodes:
             self.actor = Actor(self.charNodePath)#, {'simplechar' : anim})
-            self.actor.reparentTo(self.parent)
+            #self.actor.reparentTo(self.parent)
         
         #self.rootExposedNode = self.actor.exposeJoint( None, "modelRoot", self.root.getName() )
 
@@ -127,7 +168,7 @@ class IKChain():
             parentIKNode = ikNode
 
         self.endEffector = self.bones[-1].ikNode.attachNewNode( "EndEffector" )
-        self.endEffector.setPos( self.bones[-1].offset )
+        #self.endEffector.setPos( self.bones[-1].offset )
 
     def updateIK( self ):
 
@@ -147,13 +188,13 @@ class IKChain():
         for i in range(maxIterations):
 
             if i >= minIterations:
-                err = (self.target.getPos(render)-self.endEffector.getPos(render)).lengthSquared()
+                err = (self.target.getPos(render)-self.endEffector.getPos(render)).length()
                 if err < threshold:
                     self.targetReached = True
                     break
 
-            for j in range(len(self.bones)):
-                bone = self.bones[-j-1]
+            for j in range(len(self.bones)-1):
+                bone = self.bones[-j-2]
 
                 boneNode = bone.ikNode
                 if bone.parent:
@@ -243,6 +284,7 @@ class IKChain():
         self.removeDebugDisplay()
 
         xRay = True
+        drawConstraints = True
     
         axisGeom = createAxes( 0.07, thickness=3 )
 
@@ -271,39 +313,40 @@ class IKChain():
 
             # Draw my constraints:
             # These need to be drawn in parent space (since my rotation is done in parent space)
-            lines = LineSegs()
-            lines.setColor( 0.6, 0.2, 0.2 )
-            #lines.setColor( 0.02, 0.02, 0.02 )
-            if bone.axis:
-                qMin = Quat()
-                qMin.setFromAxisAngleRad( bone.minAng, bone.axis )
-                qMax = Quat()
-                qMax.setFromAxisAngleRad( bone.maxAng, bone.axis )
-                l = bone.offset.normalized()*0.3
-                lines.moveTo( myPos )
-                lines.drawTo( myPos + qMin.xform( l ) )
-                lines.moveTo( myPos )
-                lines.drawTo( myPos + qMax.xform( l ) )
-            else:
-                qMin = Quat()
-                qMin.setFromAxisAngleRad( bone.minAng, LVector3f.unitY() )
-                qMax = Quat()
-                qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitY() )
-                l = bone.offset.normalized()*0.3
-                lines.moveTo( myPos )
-                lines.drawTo( myPos + qMin.xform( l ) )
-                lines.moveTo( myPos )
-                lines.drawTo( myPos + qMax.xform( l ) )
-                qMin = Quat()
-                qMin.setFromAxisAngleRad( bone.minAng, LVector3f.unitZ() )
-                qMax = Quat()
-                qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitZ() )
-                lines.moveTo( myPos )
-                lines.drawTo( myPos + qMin.xform( l ) )
-                lines.moveTo( myPos )
-                lines.drawTo( myPos + qMax.xform( l ) )
+            if drawConstraints:
+                lines = LineSegs()
+                lines.setColor( 0.6, 0.2, 0.2 )
+                #lines.setColor( 0.02, 0.02, 0.02 )
+                if bone.axis:
+                    qMin = Quat()
+                    qMin.setFromAxisAngleRad( bone.minAng, bone.axis )
+                    qMax = Quat()
+                    qMax.setFromAxisAngleRad( bone.maxAng, bone.axis )
+                    l = bone.offset.normalized()*0.6
+                    lines.moveTo( myPos )
+                    lines.drawTo( myPos + qMin.xform( l ) )
+                    lines.moveTo( myPos )
+                    lines.drawTo( myPos + qMax.xform( l ) )
+                else:
+                    qMin = Quat()
+                    qMin.setFromAxisAngleRad( bone.minAng, LVector3f.unitY() )
+                    qMax = Quat()
+                    qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitY() )
+                    l = bone.offset.normalized()*0.6
+                    lines.moveTo( myPos )
+                    lines.drawTo( myPos + qMin.xform( l ) )
+                    lines.moveTo( myPos )
+                    lines.drawTo( myPos + qMax.xform( l ) )
+                    qMin = Quat()
+                    qMin.setFromAxisAngleRad( bone.minAng, LVector3f.unitZ() )
+                    qMax = Quat()
+                    qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitZ() )
+                    lines.moveTo( myPos )
+                    lines.drawTo( myPos + qMin.xform( l ) )
+                    lines.moveTo( myPos )
+                    lines.drawTo( myPos + qMax.xform( l ) )
 
-            constraints = parentNode.attachNewNode(lines.create())
+                constraints = parentNode.attachNewNode(lines.create())
 
             if xRay:
                 axis.setBin("fixed", 0)
@@ -315,18 +358,21 @@ class IKChain():
                 n.setBin("fixed", 0)
                 n.setDepthTest(False)
                 n.setDepthWrite(False)
-                constraints.setBin("fixed", 0)
-                constraints.setDepthTest(False)
-                constraints.setDepthWrite(False)
+                if drawConstraints:
+                    constraints.setBin("fixed", 0)
+                    constraints.setDepthTest(False)
+                    constraints.setDepthWrite(False)
     
             self.debugDisplayNodes.append( axis )
             self.debugDisplayNodes.append( point )
             self.debugDisplayNodes.append( n )
-            self.debugDisplayNodes.append( constraints )
+            if drawConstraints:
+                self.debugDisplayNodes.append( constraints )
     
-        axisGeom = createAxes( 1 )
+        axisGeom = createAxes( 1, thickness=2 )
         axisRoot = self.charNodePath.attachNewNode( axisGeom )
         axisEE = self.endEffector.attachNewNode( axisGeom )
+        print("ee",self.endEffector.getPos(render))
         if xRay:
             axisRoot.setBin("fixed", 0)
             axisRoot.setDepthTest(False)

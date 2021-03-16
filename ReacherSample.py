@@ -35,7 +35,7 @@ if __name__ == "__main__":
                     rotAxis = LVector3f.unitX()
                     )
 
-            for i in range( 5 ):
+            for i in range( 6 ):
                 bone = self.ikChain.addBone( offset=LVector3f.unitY(),
                         minAng = -math.pi*0.3,
                         maxAng = math.pi*0.3,

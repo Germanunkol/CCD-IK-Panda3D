@@ -28,7 +28,7 @@ def sign( x ):
     else:
         return 0
 
-def createAxes( size, bothways=False, thickness=1, xRay=False ):
+def createAxes( size, bothways=False, thickness=1 ):
 
     lines = LineSegs()
     lines.setThickness( thickness )

@@ -47,4 +47,6 @@ Usage notes:
 - Call IKChain.setTarget and IKChain.updateIK to make the chain (try to) reach for a target.
 - CCD tends to rotate the last segments (the ones close to the end effector) much more than those close to the root, which can be undesirable. To avoid this, an annealing strategy should be implemented, which weighs the movement of bones depending on their distance to the root.
 
-
+Setting up mesh with bones:
+---------------------------
+- When exporting from blender, make sure there is a vertex group for every bone (even if it's empty). Otherwise, Panda will set the bone to the model's origin.
