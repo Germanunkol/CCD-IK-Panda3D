@@ -47,7 +47,7 @@ if __name__ == "__main__":
             ## Set up model:
 
             root = render.attachNewNode("Root")
-            root.setPos( 0, 0, 1 )
+            #root.setPos( 0, 0, 1 )
 
             self.model = loader.loadModel( "Meshes/Tentacle.bam" )
             #self.model.reparentTo(root)
@@ -59,42 +59,30 @@ if __name__ == "__main__":
             
             characterNode = self.model.find("-Character")
             #print("char", characterNode.node().getBundle(0).getChild(0))
-            print("Armature:")
-            c = characterNode.node().getBundle(0).getChild(0)
-            while c:
-                print(c.getName())
-                if isinstance( c, CharacterJoint ):
-                    print(characterNode.node().findJoint( c.getName() ).getTransform())
-                if c.getNumChildren() == 0:
-                    break
-                c = c.getChild(0)
+            #print("Armature:")
+            #c = characterNode.node().getBundle(0).getChild(0)
+            #while c:
+            #    print(c.getName())
+            #    if isinstance( c, CharacterJoint ):
+            #        print(characterNode.node().findJoint( c.getName() ).getTransform())
+            #    if c.getNumChildren() == 0:
+            #        break
+            #    c = c.getChild(0)
             #print("char", characterNode.node().getBundle(0).getChild(0))
             actor = Actor(characterNode)#, {'simplechar' : anim})
             #actor.reparentTo(self.model)
             actor.reparentTo( root )
 
             jointList = []
-            #jointList.append( {"name":"Bone", "axis":None,
-            #    "minAng":-0.1*math.pi, "maxAng":0.1*math.pi} )
-            #jointList.append( {"name":"Bone.001", "axis":None,
-            #    "minAng":-0.1*math.pi, "maxAng":0.1*math.pi} )
-            ##jointList.append( {"name":"Bone.002", "axis":LVector3f.unitZ(),
-            ##    "minAng":-0.1*math.pi, "maxAng":0.1*math.pi} )
-            #jointList.append( {"name":"Bone.003", "axis":LVector3f.unitX(),
-            #    "minAng":-0.1*math.pi, "maxAng":0.1*math.pi} )
-            #jointList.append( {"name":"Bone.004", "axis":LVector3f.unitZ(),
-            #    "minAng":-0.1*math.pi, "maxAng":0.1*math.pi} )
-            #jointList.append( {"name":"Bone.005", "axis":None,
-            #    "minAng":-0.1*math.pi, "maxAng":0.1*math.pi} )
-            #jointList.append( {"name":"Bone.006", "axis":None,
-            #    "minAng":-0.1*math.pi, "maxAng":0.1*math.pi} )
-            #jointList.append( {"name":"Bone.007", "axis":None,
-            #    "minAng":-0.1*math.pi, "maxAng":0.1*math.pi} )
             jointList.append( {"name":"Bone", "axis":None,
                 "minAng":math.pi, "maxAng":math.pi} )
             for i in range(1,8):
-                jointList.append( {"name":"Bone.{:03d}".format(i), "axis":None,
-                    "minAng":-math.pi, "maxAng":math.pi} )
+                if i % 2 == 0:
+                    jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitX(),
+                        "minAng":-math.pi*0.5, "maxAng":math.pi*0.5} )
+                else:
+                    jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitZ(),
+                        "minAng":-math.pi*0.5, "maxAng":math.pi*0.5} )
              
 
             self.ikChain = IKChain.fromArmature( characterNode.node(), root, actor, jointList )
