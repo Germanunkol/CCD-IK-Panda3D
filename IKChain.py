@@ -129,9 +129,6 @@ class IKChain():
             else:
                 joint = CharacterJoint( self.char, self.bundle, parentBone.joint, name, transform )
 
-            #mat = Mat4()
-            #joint.getNetTransform(mat)
-
         bone = Bone( offset, rotAxis, minAng, maxAng, joint, parent=parentBone )
 
         self.bones.append(bone)
@@ -147,7 +144,7 @@ class IKChain():
             self.actor.reparentTo(self.parent)
 
         # Root of the chain
-        parentIKNode = self.charNodePath
+        parentIKNode = self.actor
 
         # For each bone, create:
         # - a control node which will be used to update the bone position after IK solving

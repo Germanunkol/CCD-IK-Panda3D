@@ -47,7 +47,7 @@ if __name__ == "__main__":
             ## Set up model:
 
             root = render.attachNewNode("Root")
-            #root.setPos( 0, 0, 1 )
+            root.setPos( 0, 0, 2 )
 
             self.model = loader.loadModel( "Meshes/Tentacle.bam" )
             #self.model.reparentTo(root)
@@ -114,7 +114,6 @@ if __name__ == "__main__":
             #lines.drawTo(np.getPos(parentNode))
             #point = render.attachNewNode("Point")
             self.ikTarget = render.attachNewNode(lines.create())
-            self.ikTarget.setPos( 2,0,2 )
             
             self.taskMgr.add( self.moveTarget, "MoveTarget" )
 
