@@ -23,8 +23,8 @@ class Biped():
         # Set up body movement:
 
         self.targetNode = render.attachNewNode( "WalkTarget" )
-        geom = createAxes( 0.2 )
-        self.targetNode.attachNewNode( geom )
+        #geom = createAxes( 0.2 )
+        #self.targetNode.attachNewNode( geom )
         self.walkSpeed = 1  # m/s
         self.turnSpeed = 2
         self.newRandomTarget()
@@ -56,28 +56,19 @@ class Biped():
 
         # Thigh:
         bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.45,
-                minAng = -math.pi*0.3,
-                maxAng = math.pi*0.3,
+                minAng = 0,
+                maxAng = math.pi*0.7,
                 rotAxis = LVector3f.unitZ(),
                 parentBone = bone
                 )
         
         # Shin:
         bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.55,
-                minAng = 0,
-                maxAng = math.pi*0.6,
-                rotAxis = LVector3f.unitZ(),
+                minAng = -math.pi*0.6,
+                maxAng = 0,
+                rotAxis = None,
                 parentBone = bone
                 )
-
-        # Foot:
-        #bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.55,
-        #        minAng = math.pi*0.5,
-        #        maxAng = math.pi*0.5,
-        #        rotAxis = LVector3f.unitZ(),
-        #        parentBone = bone
-        #        )
-
 
 
         # Required!
@@ -113,8 +104,8 @@ class Biped():
 
         # Thigh:
         bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.45,
-                minAng = -math.pi*0.3,
-                maxAng = math.pi*0.3,
+                minAng = -math.pi*0.7,
+                maxAng = 0,
                 rotAxis = LVector3f.unitZ(),
                 parentBone = bone
                 )
@@ -123,9 +114,10 @@ class Biped():
         bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.55,
                 minAng = 0,
                 maxAng = math.pi*0.6,
-                rotAxis = LVector3f.unitZ(),
+                rotAxis = None,
                 parentBone = bone
                 )
+
 
         # Required!
         self.ikChainLegRight.finalize()
@@ -142,10 +134,10 @@ class Biped():
         # Set up two targets that the foot should reach:
         self.footTargetLeft = render.attachNewNode("FootTargetLeft")
         self.footTargetRight = render.attachNewNode("FootTargetRight")
-        geom = createAxes( 0.1 )
+        #geom = createAxes( 0.1 )
 
-        self.footTargetLeft.attachNewNode( geom )
-        self.footTargetRight.attachNewNode( geom )
+        #self.footTargetLeft.attachNewNode( geom )
+        #self.footTargetRight.attachNewNode( geom )
         self.ikChainLegLeft.setTarget( self.footTargetLeft )
         self.ikChainLegRight.setTarget( self.footTargetRight )
 
@@ -157,8 +149,8 @@ class Biped():
         stepDist = 0.15
         self.plannedFootTargetLeft.setPos( -0.15, stepDist, -self.torsoHeight )
         self.plannedFootTargetRight.setPos( 0.15, stepDist, -self.torsoHeight )
-        self.plannedFootTargetLeft.attachNewNode( geom )
-        self.plannedFootTargetRight.attachNewNode( geom )
+        #self.plannedFootTargetLeft.attachNewNode( geom )
+        #self.plannedFootTargetRight.attachNewNode( geom )
 
         self.legMovementSpeed = self.walkSpeed*3
 

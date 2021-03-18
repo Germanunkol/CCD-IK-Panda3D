@@ -16,22 +16,22 @@ class IKChain():
             self.char = Character("IKChain")
             self.bundle = self.char.getBundle(0)
             self.skeleton = PartGroup(self.bundle, "<skeleton>")
-            #self.root = CharacterJoint(self.char, self.bundle, self.skeleton, rootName,
-            #        Mat4.identMat())
+            self.charNodePath = NodePath(self.char)
+            self.charNodePath.reparentTo( parent )
+
         else:
             self.char = char
             self.bundle = self.char.getBundle(0)
-            #self.skeleton = NodePath(self.char).find("<skeleton>")
-            #self.root = self.char.findJoint( rootName )
-            #if not self.root:
-            #    raise Exception( "Joint '" + rootName + "' not found in character!" )
+            self.charNodePath = NodePath(self.char)
 
+        # We need an actor to be able to control (and expose) joints. If it already exists,
+        # likely because the model was loaded from a file - great then just use that.
+        # However, if it doesn't exist, this means we first need to set up all the joints before
+        # we create the actor, so keep it empty for now!
         if actor:
             self.actor = actor
         else:
             self.actor = None
-
-        self.charNodePath = NodePath(self.char)
 
         self.bones = []
         self.target = None
@@ -128,9 +128,9 @@ class IKChain():
                 joint = CharacterJoint( self.char, self.bundle, self.skeleton, name, transform )
             else:
                 joint = CharacterJoint( self.char, self.bundle, parentBone.joint, name, transform )
-            mat = Mat4()
-            joint.getNetTransform(mat)
 
+            #mat = Mat4()
+            #joint.getNetTransform(mat)
 
         bone = Bone( offset, rotAxis, minAng, maxAng, joint, parent=parentBone )
 
@@ -140,12 +140,11 @@ class IKChain():
 
     def finalize( self ):
 
+        # Create an actor so we can expose and control nodes:
+        # Note: If the model was loaded from a file, the actor already exists
         if not self.actor:
-            # Create an actor so we can expose nodes:
             self.actor = Actor(self.charNodePath)#, {'simplechar' : anim})
-            #self.actor.reparentTo(self.parent)
-        
-        #self.rootExposedNode = self.actor.exposeJoint( None, "modelRoot", self.root.getName() )
+            self.actor.reparentTo(self.parent)
 
         # Root of the chain
         parentIKNode = self.charNodePath
@@ -180,6 +179,10 @@ class IKChain():
         # This will end up affecting the actual mesh.
         for bone in self.bones:
             bone.controlNode.setQuat( bone.ikNode.getQuat() )
+
+        if self.debugDisplayEnabled:
+            self.removeDebugDisplay()
+            self.createDebugDisplay()
 
 
     def inverseKinematicsCCD( self, threshold = 1e-2, minIterations=1, maxIterations=10 ):
@@ -286,13 +289,14 @@ class IKChain():
         xRay = True
         drawConstraints = True
     
-        axisGeom = createAxes( 0.07, thickness=3 )
+        axisGeom = createAxes( 0.1 )
 
         for bone in self.bones:
 
             # Draw axis and point at my location (i.e. after applying my transform to my parent):
             axis = bone.exposedNode.attachNewNode( axisGeom )
             point = bone.exposedNode.attachNewNode( createPoint( col=bone.col ) )
+
 
             # Retrieve parent space:
             if bone.parent:
@@ -310,7 +314,6 @@ class IKChain():
             geom = lines.create()
             n = parentNode.attachNewNode( geom )
 
-
             # Draw my constraints:
             # These need to be drawn in parent space (since my rotation is done in parent space)
             if drawConstraints:
@@ -322,7 +325,7 @@ class IKChain():
                     qMin.setFromAxisAngleRad( bone.minAng, bone.axis )
                     qMax = Quat()
                     qMax.setFromAxisAngleRad( bone.maxAng, bone.axis )
-                    l = bone.offset.normalized()*0.6
+                    l = bone.offset*0.5
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + qMin.xform( l ) )
                     lines.moveTo( myPos )
@@ -332,7 +335,7 @@ class IKChain():
                     qMin.setFromAxisAngleRad( bone.minAng, LVector3f.unitY() )
                     qMax = Quat()
                     qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitY() )
-                    l = bone.offset.normalized()*0.6
+                    l = bone.offset*0.5
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + qMin.xform( l ) )
                     lines.moveTo( myPos )
@@ -369,16 +372,15 @@ class IKChain():
             if drawConstraints:
                 self.debugDisplayNodes.append( constraints )
     
-        axisGeom = createAxes( 1, thickness=2 )
-        axisRoot = self.charNodePath.attachNewNode( axisGeom )
-        axisEE = self.endEffector.attachNewNode( axisGeom )
-        print("ee",self.endEffector.getPos(render))
-        if xRay:
-            axisRoot.setBin("fixed", 0)
-            axisRoot.setDepthTest(False)
-            axisRoot.setDepthWrite(False)
-            axisEE.setBin("fixed", 0)
-            axisEE.setDepthTest(False)
-            axisEE.setDepthWrite(False)
+        #axisGeom = createAxes( 0.5, thickness=2 )
+        #axisRoot = self.charNodePath.attachNewNode( axisGeom )
+        #axisEE = self.endEffector.attachNewNode( axisGeom )
+        #if xRay:
+        #    axisRoot.setBin("fixed", 0)
+        #    axisRoot.setDepthTest(False)
+        #    axisRoot.setDepthWrite(False)
+        #    axisEE.setBin("fixed", 0)
+        #    axisEE.setDepthTest(False)
+        #    axisEE.setDepthWrite(False)
 
 

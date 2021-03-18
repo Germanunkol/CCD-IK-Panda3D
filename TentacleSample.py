@@ -99,6 +99,8 @@ if __name__ == "__main__":
 
             self.ikChain = IKChain.fromArmature( characterNode.node(), root, actor, jointList )
 
+            print("chain:")
+            self.ikChain.parent.ls()
             self.ikChain.debugDisplay()
 
             #factory.debugInfo( render )
