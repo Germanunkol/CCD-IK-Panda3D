@@ -17,7 +17,6 @@ class IKChain():
             self.bundle = self.char.getBundle(0)
             self.skeleton = PartGroup(self.bundle, "<skeleton>")
             self.charNodePath = NodePath(self.char)
-            self.charNodePath.reparentTo( parent )
 
         else:
             self.char = char
