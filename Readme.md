@@ -2,6 +2,10 @@ Simple Cyclic Coordinate Decent implementation for Panda3D
 ===========================================================
 Numerical Inverse Kinematics solver with simple constraints
 
+![](IK-2021-03-08_22.14.25.gif)
+![](Biped-2021-03-13_22.23.21.gif)
+![](CCDIK-2020-12-29_17.31.24.gif)
+
 Features:
 ---------
 - Hinge joints
