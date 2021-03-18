@@ -134,10 +134,9 @@ class Biped():
         # Set up two targets that the foot should reach:
         self.footTargetLeft = render.attachNewNode("FootTargetLeft")
         self.footTargetRight = render.attachNewNode("FootTargetRight")
-        #geom = createAxes( 0.1 )
-
-        #self.footTargetLeft.attachNewNode( geom )
-        #self.footTargetRight.attachNewNode( geom )
+        geom = createAxes( 0.1 )
+        self.footTargetLeft.attachNewNode( geom )
+        self.footTargetRight.attachNewNode( geom )
         self.ikChainLegLeft.setTarget( self.footTargetLeft )
         self.ikChainLegRight.setTarget( self.footTargetRight )
 
@@ -146,11 +145,11 @@ class Biped():
         self.plannedFootTargetLeft = self.torsoNode.attachNewNode( "PlannedFootTargetLeft" )
         self.plannedFootTargetRight = self.torsoNode.attachNewNode( "PlannedFootTargetRight" )
 
-        stepDist = 0.15
+        stepDist = 0.35
         self.plannedFootTargetLeft.setPos( -0.15, stepDist, -self.torsoHeight )
         self.plannedFootTargetRight.setPos( 0.15, stepDist, -self.torsoHeight )
-        #self.plannedFootTargetLeft.attachNewNode( geom )
-        #self.plannedFootTargetRight.attachNewNode( geom )
+        self.plannedFootTargetLeft.attachNewNode( geom )
+        self.plannedFootTargetRight.attachNewNode( geom )
 
         self.legMovementSpeed = self.walkSpeed*3
 
