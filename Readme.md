@@ -39,14 +39,15 @@ Press + and - to speed the character up or slow it down. Note that this is very 
 
 Usage notes:
 ------------
-- In the current form (state March 2021), the IK Chain creates its own Character and CharacterJoints. Ideally, in the future, it should be able to use an existing Character, loaded with a rigged mesh.
 - Create a new IKChain, then create bones by calling "addBone".
 - The "offset" parameter is a vector which describes the difference between the new bone's position and that of its parent. **Note that I only tested with offsets which are along the Y axis, i.e. are multiples of LVector3f.unitY().**
 - The "rotAxis" can either be a (unit) vector, or "None". In the latter case, the constraint acts like that of a ball joint (or maybe more like two perpendicular hinge joints). In the former case, the rotAxis is the axis of the hinge joint. **Note that I only tested axis which are perpendicular to the "offset" vector, more specifically I usually use unitX or unitY.**
 - After adding all bones, you must call "IKChain.finalize()".
 - Call IKChain.setTarget and IKChain.updateIK to make the chain (try to) reach for a target.
 - CCD tends to rotate the last segments (the ones close to the end effector) much more than those close to the root, which can be undesirable. To avoid this, an annealing strategy should be implemented, which weighs the movement of bones depending on their distance to the root.
+- Ball joints (rotAxis=None) currently have no way of limiting a bone's "roll" angle. This means your bones may spin uncontrollably around their own axis.
 
 Setting up mesh with bones:
 ---------------------------
-- When exporting from blender, make sure there is a vertex group for every bone (even if it's empty). Otherwise, Panda will set the bone to the model's origin.
+- When exporting from blender, make sure there is a vertex group for every bone - even if it's empty (i.e. if you have a bone called "Bone.002" there must be a vertex group called "Bone.002"). Otherwise, the bone gets positioned at the model root by Panda3D, and offsets are no longer correct. Hint: in blender, these vertex groups are set up automatically when parenting an armature to the mesh and selecting the automatic weight assignment.
+- Make sure every bone is connected to its predecessor.
