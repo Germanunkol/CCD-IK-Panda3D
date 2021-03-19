@@ -165,11 +165,11 @@ class IKChain():
         self.endEffector = self.bones[-1].ikNode.attachNewNode( "EndEffector" )
         #self.endEffector.setPos( self.bones[-1].offset )
 
-    def updateIK( self ):
+    def updateIK( self, threshold = 1e-2, minIterations=1, maxIterations=10 ):
 
         # Solve the IK chain for the IK nodes:
         if self.target:
-            self.inverseKinematicsCCD()
+            self.inverseKinematicsCCD( threshold, minIterations, maxIterations )
 
         # Copy the data from the IK chain to the actual bones.
         # This will end up affecting the actual mesh.
