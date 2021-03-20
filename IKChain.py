@@ -199,7 +199,7 @@ class IKChain():
                 if bone.parent:
                     parentNode = bone.parent.ikNode
                 else:
-                    parentNode = self.charNodePath
+                    parentNode = self.actor
 
                 target = self.target.getPos( boneNode )
 

@@ -1,6 +1,7 @@
 from IKChain import IKChain
 from Utils import *
 from direct.actor.Actor import Actor
+from panda3d.core import *
 
 if __name__ == "__main__":
 
@@ -46,8 +47,8 @@ if __name__ == "__main__":
             ############################################
             ## Set up model:
 
-            root = render.attachNewNode("Root")
-            root.setPos( 0, 0, 2 )
+            self.root = render.attachNewNode("Root")
+            self.root.setPos( 0, 0, 2 )
 
             self.model = loader.loadModel( "Meshes/Tentacle.bam" )
             #self.model.reparentTo(root)
@@ -58,34 +59,22 @@ if __name__ == "__main__":
             self.model.setMaterial(m)
             
             characterNode = self.model.find("-Character")
-            #print("char", characterNode.node().getBundle(0).getChild(0))
-            #print("Armature:")
-            #c = characterNode.node().getBundle(0).getChild(0)
-            #while c:
-            #    print(c.getName())
-            #    if isinstance( c, CharacterJoint ):
-            #        print(characterNode.node().findJoint( c.getName() ).getTransform())
-            #    if c.getNumChildren() == 0:
-            #        break
-            #    c = c.getChild(0)
-            #print("char", characterNode.node().getBundle(0).getChild(0))
             actor = Actor(characterNode)#, {'simplechar' : anim})
-            #actor.reparentTo(self.model)
-            actor.reparentTo( root )
+            actor.reparentTo( self.root )
 
             jointList = []
             jointList.append( {"name":"Bone", "axis":None,
-                "minAng":math.pi, "maxAng":math.pi} )
+                "minAng":-math.pi*0.1, "maxAng":math.pi*0.1} )
             for i in range(1,8):
                 if i % 2 == 0:
                     jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitX(),
-                        "minAng":-math.pi*0.5, "maxAng":math.pi*0.5} )
+                        "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
                 else:
                     jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitZ(),
-                        "minAng":-math.pi*0.5, "maxAng":math.pi*0.5} )
+                        "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
              
 
-            self.ikChain = IKChain.fromArmature( characterNode.node(), root, actor, jointList )
+            self.ikChain = IKChain.fromArmature( characterNode.node(), self.root, actor, jointList )
 
             print("chain:")
             self.ikChain.parent.ls()
@@ -100,8 +89,10 @@ if __name__ == "__main__":
             self.accept( "wheel_down", self.camControl.wheelDown )
             self.accept( "wheel_up", self.camControl.wheelUp )
 
-            self.accept( "z", self.toggleAnimation )
             self.animateTarget = True
+            self.accept( "z", self.toggleAnimation )
+            self.accept( "j-repeat", self.moveRootDown )
+            self.accept( "k-repeat", self.moveRootUp )
 
             ##################################
             ## Target point:
@@ -134,8 +125,15 @@ if __name__ == "__main__":
             self.ikChain.updateIK()
             return task.cont
 
+        def moveRootUp( self ):
+            self.root.setPos( self.root.getPos() + LVector3f.unitZ()*globalClock.getDt()*3 )
+
+        def moveRootDown( self ):
+            self.root.setPos( self.root.getPos() - LVector3f.unitZ()*globalClock.getDt()*3 )
+
+
         def toggleAnimation( self ):
-            self.animateTarget = (self.animateTarget == False)
+            self.animate = (self.animateTarget == False)
 
 
     app = MyApp()
