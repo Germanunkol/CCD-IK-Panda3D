@@ -66,12 +66,14 @@ if __name__ == "__main__":
             jointList.append( {"name":"Bone", "axis":None,
                 "minAng":-math.pi*0.1, "maxAng":math.pi*0.1} )
             for i in range(1,8):
-                if i % 2 == 0:
-                    jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitX(),
-                        "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
-                else:
-                    jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitZ(),
-                        "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
+                jointList.append( {"name":"Bone.{:03d}".format(i), "axis":None,
+                    "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
+                #if i % 2 == 0:
+                #    jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitX(),
+                #        "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
+                #else:
+                #    jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitZ(),
+                #        "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
              
 
             self.ikChain = IKChain.fromArmature( characterNode.node(), self.root, actor, jointList )
