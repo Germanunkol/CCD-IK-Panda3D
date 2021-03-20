@@ -330,9 +330,9 @@ class IKChain():
                     lines.drawTo( myPos + qMax.xform( l ) )
                 else:
                     qMin = Quat()
-                    qMin.setFromAxisAngleRad( bone.minAng, LVector3f.unitY() )
+                    qMin.setFromAxisAngleRad( bone.minAng, LVector3f.unitX() )
                     qMax = Quat()
-                    qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitY() )
+                    qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitX() )
                     l = bone.offset*0.5
                     if l.lengthSquared() < 1e-9:
                         l = LVector3f.unitY()
