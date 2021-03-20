@@ -2,8 +2,6 @@ Simple Cyclic Coordinate Decent implementation for Panda3D
 ===========================================================
 Numerical Inverse Kinematics solver with simple constraints
 
-![](IK-2021-03-08_22.14.25.gif)
-![](Biped-2021-03-13_22.23.21.gif)
 ![](CCDIK-2020-12-29_17.31.24.gif)
 
 Features:
@@ -30,6 +28,8 @@ The Reacher sample shows how to set up a simple IK chain with constraints which 
 python3 ReacherSample.py
 ```
 
+![](IK-2021-03-08_22.14.25.gif)
+
 ### Biped Sample: ###
 
 The Biped sample shows a very basic humanoid, where the legs are placed by IK. The basic character setup is: The root is a "torso" node. To this, a hip node is rigidly attached. There are two legs, each is its own IKChain. To let the character walk, the torso node is moved, and everything else moves with it.
@@ -41,9 +41,17 @@ python3 BipedSample.py
 
 Press + and - to speed the character up or slow it down. Note that this is very simplified - the step length should likely be increased for higher speeds.
 
-### TentacleSample: ###
+![](Biped-2021-03-13_22.23.21.gif)
+
+### Tentacle Sample: ###
 
 This sample shows how to set up a Bone chain from an existing mesh. Note that all bones are attached to their parent, each bone has a corresponding vertex group which it controls and all bones point down the Y axis, so their constraints will be set up to rotate over their X or Z axes.
+
+```
+python3 TentacleSample.py
+```
+
+
 
 Usage notes:
 ------------
