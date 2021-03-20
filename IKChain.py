@@ -298,7 +298,7 @@ class IKChain():
             if bone.parent:
                 parentNode = bone.parent.exposedNode
             else:
-                parentNode = self.charNodePath
+                parentNode = self.actor
 
             # Draw my offset in parent space
             lines = LineSegs()
@@ -322,6 +322,8 @@ class IKChain():
                     qMax = Quat()
                     qMax.setFromAxisAngleRad( bone.maxAng, bone.axis )
                     l = bone.offset*0.5
+                    if l.lengthSquared() < 1e-9:
+                        l = LVector3f.unitY()
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + qMin.xform( l ) )
                     lines.moveTo( myPos )
@@ -332,6 +334,8 @@ class IKChain():
                     qMax = Quat()
                     qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitY() )
                     l = bone.offset*0.5
+                    if l.lengthSquared() < 1e-9:
+                        l = LVector3f.unitY()
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + qMin.xform( l ) )
                     lines.moveTo( myPos )
