@@ -4,15 +4,19 @@ from panda3d.core import LPoint3, LVector3f
 from panda3d.core import KeyboardButton, MouseButton
 from panda3d.core import Quat
 import math
+from Utils import *
 
 class CameraControl:
 
-    def __init__( self, node, mouseWatcherNode ):
+    def __init__( self, node, mouseWatcherNode, speed=0.2 ):
 
         self.node = node
+
         self.focusNode = render.attachNewNode("CameraFocusNode")
         self.attachmentNode = None
         self.attached = True
+
+        self.focusNode.attachNewNode( createAxes( 0.1 ) )
 
         self.focusPoint = LPoint3()
 
@@ -24,7 +28,7 @@ class CameraControl:
         self.bRight = KeyboardButton.ascii_key('d')
         self.bSpeed = KeyboardButton.lshift()
 
-        self.speed = 0.2
+        self.speed = speed
 
         self.zoom = 10
 
@@ -67,7 +71,7 @@ class CameraControl:
                 #self.ang = max( 0, min( self.ang, math.pi*0.49 ) )
                 dy = self.lastMousePos[1] - y
                 self.angY -= dy
-                self.angY = max( 0.01, min( self.angY, math.pi ) )
+                #self.angY = max( 0.01, min( self.angY, math.pi ) )
         
             self.lastMousePos = (x,y)
 
@@ -91,12 +95,15 @@ class CameraControl:
         self.focusNode.setPos( self.focusPoint )
 
         radius = self.zoom
-        self.angY = max( 0, min( math.pi*0.4, self.angY ) )
-        rY = math.sin( self.angY )
-        self.nodePos = self.focusPoint + LVector3f( rY*math.cos(self.ang)*radius, -rY*math.sin(self.ang)*radius, radius*math.cos( self.angY) )
+        #self.angY = max( 0, min( math.pi*0.4, self.angY ) )
+        self.angY = max( self.angY, math.pi*0.1 )
+        self.angY = min( self.angY, math.pi*0.9 )
+        #rY = math.sin( self.angY )
+        self.nodePos = self.focusPoint + LVector3f( math.cos(self.ang)*radius, -math.sin(self.ang)*radius, radius*math.cos( self.angY) )
 
         self.node.setPos( self.nodePos )
-        self.node.lookAt( self.focusNode, LVector3f.unitZ() )
+        #self.node.lookAt( self.focusNode, LVector3f.unitZ() )
+        self.node.lookAt( self.focusNode )
 
         return Task.cont
 
