@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
         def moveTarget( self, task ):
             if self.animateTarget:
-                speed = 0.1
+                speed = 1
                 self.ikTarget.setPos( 2.5*math.sin(speed*task.time),
                         5*math.sin(speed*task.time*1.6+2),
                         math.cos(speed*task.time*1.6+2) )
