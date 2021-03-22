@@ -83,6 +83,7 @@ class IKChain():
                     raise Exception("Axis given for joint " + jointName + " has length zero")
                 axis = axis.normalized()
 
+
             elif axis == "auto":# Ask the system to automatically determine rotation axis:
 
                 # Try to get the rotation from the joint transform:
@@ -102,7 +103,6 @@ class IKChain():
             bone = chain.addBone( t, rotAxis=axis, minAng=minAng, maxAng=maxAng,
                     parentBone=bone,
                     joint=joint )
-            #parentJoint = joint
 
         chain.finalize()
         return chain
@@ -153,8 +153,8 @@ class IKChain():
             name = bone.joint.getName()
             controlNode = self.actor.controlJoint(None, "modelRoot", name )
             bone.controlNode = controlNode
-            exposedNode = self.actor.exposeJoint(None, "modelRoot", name )
-            bone.exposedNode = exposedNode
+            #exposedNode = self.actor.exposeJoint(None, "modelRoot", name )
+            #bone.exposedNode = exposedNode
             # Separate nodes for IK:
             ikNode = parentIKNode.attachNewNode( name )
             # Same local pos as the exposed joints:
@@ -259,6 +259,7 @@ class IKChain():
 
                     boneNode.setQuat( qNew )
 
+
     def setTarget( self, node ):
         self.target = node
 
@@ -285,18 +286,19 @@ class IKChain():
         xRay = True
         drawConstraints = True
     
-        axisGeom = createAxes( 0.1 )
+        axesGeom = createAxes( 0.1 )
 
-        for bone in self.bones:
+        for i in range(len(self.bones)):
+            bone = self.bones[i]
 
-            # Draw axis and point at my location (i.e. after applying my transform to my parent):
-            axis = bone.exposedNode.attachNewNode( axisGeom )
-            point = bone.exposedNode.attachNewNode( createPoint( col=bone.col ) )
+            # Draw axes and point at my location (i.e. after applying my transform to my parent):
+            axes = bone.ikNode.attachNewNode( axesGeom )
+            point = bone.ikNode.attachNewNode( createPoint( col=bone.col ) )
 
 
             # Retrieve parent space:
             if bone.parent:
-                parentNode = bone.parent.exposedNode
+                parentNode = bone.parent.ikNode
             else:
                 parentNode = self.actor
 
@@ -305,7 +307,7 @@ class IKChain():
             lines.setThickness( 3 )
             lines.setColor( bone.col[0], bone.col[1], bone.col[2], 1 )
             lines.moveTo( 0, 0, 0 )
-            myPos = bone.exposedNode.getPos( parentNode )
+            myPos = bone.ikNode.getPos( parentNode )
             lines.drawTo( myPos )
             geom = lines.create()
             n = parentNode.attachNewNode( geom )
@@ -322,8 +324,14 @@ class IKChain():
                     qMax = Quat()
                     qMax.setFromAxisAngleRad( bone.maxAng, bone.axis )
                     l = bone.offset*0.5
-                    if l.lengthSquared() < 1e-9:
-                        l = LVector3f.unitY()
+                    #print(parentNode)
+                    j = 1
+                    print(j, l)
+                    while l.lengthSquared() < 1e-9 and i+j < len(self.bones):
+                        l = self.bones[i+j].offset*0.5
+                        j += 1
+                        print(j, l)
+                    #print("bone offset", l, myPos, qMin.xform(l ), qMax.xform( l ) )
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + qMin.xform( l ) )
                     lines.moveTo( myPos )
@@ -351,10 +359,23 @@ class IKChain():
 
                 constraints = parentNode.attachNewNode(lines.create())
 
+                if bone.axis:
+                    lines = LineSegs()
+                    lines.setColor( 0.8, 0.8, 0.8 )
+                    lines.setThickness( 5 )
+                    myPos = bone.ikNode.getPos( parentNode )
+                    lines.moveTo( myPos )
+                    lines.drawTo( myPos + bone.axis*0.1 )
+                    geom = lines.create()
+                    constraintsAxis = parentNode.attachNewNode( geom )
+                    print("drawing axis", parentNode)
+
+
+
             if xRay:
-                axis.setBin("fixed", 0)
-                axis.setDepthTest(False)
-                axis.setDepthWrite(False)
+                axes.setBin("fixed", 0)
+                axes.setDepthTest(False)
+                axes.setDepthWrite(False)
                 point.setBin("fixed", 0)
                 point.setDepthTest(False)
                 point.setDepthWrite(False)
@@ -365,12 +386,19 @@ class IKChain():
                     constraints.setBin("fixed", 0)
                     constraints.setDepthTest(False)
                     constraints.setDepthWrite(False)
+                    if bone.axis:
+                        constraintsAxis.setBin("fixed", 0)
+                        constraintsAxis.setDepthTest(False)
+                        constraintsAxis.setDepthWrite(False)
+
     
-            self.debugDisplayNodes.append( axis )
+            self.debugDisplayNodes.append( axes )
             self.debugDisplayNodes.append( point )
             self.debugDisplayNodes.append( n )
             if drawConstraints:
                 self.debugDisplayNodes.append( constraints )
+                if bone.axis:
+                    self.debugDisplayNodes.append( constraintsAxis )
     
         #axisGeom = createAxes( 0.5, thickness=2 )
         #axisRoot = self.charNodePath.attachNewNode( axisGeom )

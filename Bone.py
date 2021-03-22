@@ -5,9 +5,11 @@ class Bone():
     def __init__( self, offset, axis, minAng, maxAng, joint, parent=None ):
 
         self.offset = offset
-        self.axis = axis
+        print("offset:", offset)
         if axis:
-            self.axis = self.axis.normalized()
+            self.axis = axis.normalized()
+        else:
+            self.axis = None
         self.minAng = minAng
         self.maxAng = maxAng
         self.targetAng = 0
