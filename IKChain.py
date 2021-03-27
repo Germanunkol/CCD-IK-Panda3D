@@ -326,12 +326,12 @@ class IKChain():
                 if bone.axis:
                     l = getPerpendicularVec( bone.axis )*lineLength
 
-                    #lines = LineSegs()
-                    #lines.setColor( 0.6, 0.3, 0.3 )
-                    #lines.setThickness( 3 )
-                    #lines.moveTo( myPos )
-                    #lines.drawTo( myPos + l )
-                    #parentDebugNode.attachNewNode(lines.create())
+                    lines = LineSegs()
+                    lines.setColor( 0.6, 0.3, 0.3 )
+                    lines.setThickness( 3 )
+                    lines.moveTo( 0,0,0 )
+                    lines.drawTo( l )
+                    bone.debugNode.attachNewNode(lines.create())
         
                     lines = LineSegs()
                     lines.setColor( 0.8, 0.1, 0.2 )
@@ -360,7 +360,6 @@ class IKChain():
                         q.setFromAxisAngleRad( ang, bone.axis )
                         lines.drawTo( myPos + q.xform( l*0.9 ) )
                     parentDebugNode.attachNewNode(lines.create())
-
 
 
                 if bone.axis:
