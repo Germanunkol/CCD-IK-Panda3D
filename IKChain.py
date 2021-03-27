@@ -74,9 +74,14 @@ class IKChain():
             # Get the translation:
             t = mat.getRow3(3)
 
+            static = False
+
             # Set up rotation axis:
             if axis == None:    # No axis, i.e. the constraint should be a ball joint:
                 pass
+            elif axis == "static":
+                static=True
+                axis=None
 
             elif isinstance( axis, LVector3f ): # Axis was given, use it:
                 if axis.length() <  1e-9:
@@ -102,13 +107,14 @@ class IKChain():
 
             bone = chain.addBone( t, rotAxis=axis, minAng=minAng, maxAng=maxAng,
                     parentBone=bone,
-                    joint=joint )
+                    joint=joint,
+                    static=static )
 
         chain.finalize()
         return chain
 
 
-    def addBone( self, offset=None, rotAxis=None, minAng=0, maxAng=0, parentBone=None, joint=None ):
+    def addBone( self, offset=None, rotAxis=None, minAng=0, maxAng=0, parentBone=None, joint=None, static=False ):
 
         if rotAxis:
             rotAxis = rotAxis.normalized()
@@ -127,8 +133,11 @@ class IKChain():
                 joint = CharacterJoint( self.char, self.bundle, self.skeleton, name, transform )
             else:
                 joint = CharacterJoint( self.char, self.bundle, parentBone.joint, name, transform )
+        else:
+            print(joint.getName())
+            print(joint.getTransform())
 
-        bone = Bone( offset, rotAxis, minAng, maxAng, joint, parent=parentBone )
+        bone = Bone( offset, rotAxis, minAng, maxAng, joint, parent=parentBone, static=static )
 
         self.bones.append(bone)
 
@@ -194,6 +203,9 @@ class IKChain():
 
             for j in range(len(self.bones)-1):
                 bone = self.bones[-j-2]
+
+                if bone.static:
+                    continue
 
                 boneNode = bone.ikNode
                 if bone.parent:
@@ -323,14 +335,7 @@ class IKChain():
                     qMin.setFromAxisAngleRad( bone.minAng, bone.axis )
                     qMax = Quat()
                     qMax.setFromAxisAngleRad( bone.maxAng, bone.axis )
-                    l = bone.offset*0.5
-                    #print(parentNode)
-                    j = 1
-                    print(j, l)
-                    while l.lengthSquared() < 1e-9 and i+j < len(self.bones):
-                        l = self.bones[i+j].offset*0.5
-                        j += 1
-                        print(j, l)
+                    l = LVector3f.unitY()*0.3
                     #print("bone offset", l, myPos, qMin.xform(l ), qMax.xform( l ) )
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + qMin.xform( l ) )
