@@ -162,3 +162,15 @@ def getRotationBetween( src, dest, fallbackAxis=LVector3f.zero() ):
         
     return q
 
+def getPerpendicularVec( vec ):
+    vec = vec.normalized()
+    vec2 = LVector3f.unitY()
+
+    ang = vec.angleDeg( vec2 )
+    if ang < 0.1 or ang > 179.9:       # Parallel?
+        # Choose a different vector:
+        vec2 = LVector3f.unitX()
+
+    return vec.cross(vec2).normalized()
+
+

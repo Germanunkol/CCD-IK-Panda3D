@@ -23,7 +23,7 @@ class Bone():
         if parent:
             self.parent.addChild( self )
     
-        self.col = (random.random(), random.random(), random.random())
+        self.col = ( 0.5, 0.5, 0.5 )
 
     def addChild( self, child ):
         if not child in self.children:

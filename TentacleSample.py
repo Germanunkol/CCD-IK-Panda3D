@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
             print("chain:")
             self.ikChain.parent.ls()
-            self.ikChain.debugDisplay()
+            self.ikChain.debugDisplay( lineLength=0.5 )
 
             #factory.debugInfo( render )
             focusNode = render.attachNewNode( "CameraFocusNode" )

@@ -275,44 +275,40 @@ class IKChain():
     def setTarget( self, node ):
         self.target = node
 
-
-    def debugDisplay( self, enable=True ):
-
-        self.debugDisplayEnabled = enable
-
-        if enable:
-            self.createDebugDisplay()
-        else:
-            self.removeDebugDisplay()
-
-    def removeDebugDisplay( self ):
-        # Clear previous nodes:
-        for n in self.debugDisplayNodes:
-            n.removeNode()
-        self.debugDisplayNodes = []
-
-    def createDebugDisplay( self ):
+    def debugDisplay( self, lineLength=0.2, xRay=True, drawConstraints=True ):
 
         self.removeDebugDisplay()
 
-        xRay = True
-        drawConstraints = True
-    
-        axesGeom = createAxes( 0.1 )
+        axesGeom = createAxes( lineLength )
 
         for i in range(len(self.bones)):
             bone = self.bones[i]
 
-            # Draw axes and point at my location (i.e. after applying my transform to my parent):
-            axes = bone.ikNode.attachNewNode( axesGeom )
-            point = bone.ikNode.attachNewNode( createPoint( col=bone.col ) )
+            # Attach a new node to the ikNode. All debug info will be attached to this node.
+            # This is only for cleaner removal of the node later on - by remuving the debug node,
+            # all debug info will be cleared. Otherwise this node has no significance and we could
+            # just as well attach everything to the ikNode itself
+            bone.debugNode = bone.ikNode.attachNewNode("DebugDisplay")
+            bone.debugNode.setLightOff(1)
 
+            # Draw axes at my location and rotation (i.e. after applying my transform to my parent):
+            axes = bone.debugNode.attachNewNode( axesGeom )
+            #point = bone.ikNode.attachNewNode( createPoint( col=bone.col ) )
 
             # Retrieve parent space:
             if bone.parent:
+                # If we have a parent, then this parent is a bone.
                 parentNode = bone.parent.ikNode
             else:
+                # Otherwise the parent is the actor itself, i.e. the root of the skeleton
                 parentNode = self.actor
+
+            # Again, use the parent's debug node rather than attaching stuff to the ikNode directly,
+            # so we can remove the debug info easily later on by removing the debug node.
+            parentDebugNode = parentNode.find("DebugDisplay")
+            if not parentDebugNode:
+                parentDebugNode = parentNode.attachNewNode("DebugDisplay")
+                parentDebugNode.setLightOff(1)
 
             # Draw my offset in parent space
             lines = LineSegs()
@@ -322,47 +318,50 @@ class IKChain():
             myPos = bone.ikNode.getPos( parentNode )
             lines.drawTo( myPos )
             geom = lines.create()
-            n = parentNode.attachNewNode( geom )
+            parentDebugNode.attachNewNode( geom )
 
             # Draw my constraints:
             # These need to be drawn in parent space (since my rotation is done in parent space)
             if drawConstraints:
-                lines = LineSegs()
-                lines.setColor( 0.6, 0.2, 0.2 )
-                #lines.setColor( 0.02, 0.02, 0.02 )
                 if bone.axis:
+                    l = getPerpendicularVec( bone.axis )*lineLength
+
+                    #lines = LineSegs()
+                    #lines.setColor( 0.6, 0.3, 0.3 )
+                    #lines.setThickness( 3 )
+                    #lines.moveTo( myPos )
+                    #lines.drawTo( myPos + l )
+                    #parentDebugNode.attachNewNode(lines.create())
+        
+                    lines = LineSegs()
+                    lines.setColor( 0.8, 0.1, 0.2 )
+                    lines.setThickness( 3 )
                     qMin = Quat()
                     qMin.setFromAxisAngleRad( bone.minAng, bone.axis )
                     qMax = Quat()
                     qMax.setFromAxisAngleRad( bone.maxAng, bone.axis )
-                    l = LVector3f.unitY()*0.3
-                    #print("bone offset", l, myPos, qMin.xform(l ), qMax.xform( l ) )
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + qMin.xform( l ) )
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + qMax.xform( l ) )
-                else:
-                    qMin = Quat()
-                    qMin.setFromAxisAngleRad( bone.minAng, LVector3f.unitX() )
-                    qMax = Quat()
-                    qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitX() )
-                    l = bone.offset*0.5
-                    if l.lengthSquared() < 1e-9:
-                        l = LVector3f.unitY()
-                    lines.moveTo( myPos )
-                    lines.drawTo( myPos + qMin.xform( l ) )
-                    lines.moveTo( myPos )
-                    lines.drawTo( myPos + qMax.xform( l ) )
-                    qMin = Quat()
-                    qMin.setFromAxisAngleRad( bone.minAng, LVector3f.unitZ() )
-                    qMax = Quat()
-                    qMax.setFromAxisAngleRad( bone.maxAng, LVector3f.unitZ() )
-                    lines.moveTo( myPos )
-                    lines.drawTo( myPos + qMin.xform( l ) )
-                    lines.moveTo( myPos )
-                    lines.drawTo( myPos + qMax.xform( l ) )
+                    parentDebugNode.attachNewNode(lines.create())
 
-                constraints = parentNode.attachNewNode(lines.create())
+                    # Draw arc:
+                    lines = LineSegs()
+                    lines.setColor( 0.6, 0.3, 0.3 )
+                    lines.setThickness( 2 )
+                    lines.moveTo( myPos + qMin.xform( l*0.9 ) )
+                    ang = bone.minAng
+                    while ang < bone.maxAng:
+                        ang += math.pi*0.1
+                        if ang > bone.maxAng:
+                            ang = bone.maxAng
+                        q = Quat()
+                        q.setFromAxisAngleRad( ang, bone.axis )
+                        lines.drawTo( myPos + q.xform( l*0.9 ) )
+                    parentDebugNode.attachNewNode(lines.create())
+
+
 
                 if bone.axis:
                     lines = LineSegs()
@@ -375,45 +374,23 @@ class IKChain():
                     constraintsAxis = parentNode.attachNewNode( geom )
                     print("drawing axis", parentNode)
 
-
-
             if xRay:
-                axes.setBin("fixed", 0)
-                axes.setDepthTest(False)
-                axes.setDepthWrite(False)
-                point.setBin("fixed", 0)
-                point.setDepthTest(False)
-                point.setDepthWrite(False)
-                n.setBin("fixed", 0)
-                n.setDepthTest(False)
-                n.setDepthWrite(False)
-                if drawConstraints:
-                    constraints.setBin("fixed", 0)
-                    constraints.setDepthTest(False)
-                    constraints.setDepthWrite(False)
-                    if bone.axis:
-                        constraintsAxis.setBin("fixed", 0)
-                        constraintsAxis.setDepthTest(False)
-                        constraintsAxis.setDepthWrite(False)
+                bone.debugNode.setBin("fixed", 0)
+                bone.debugNode.setDepthTest(False)
+                bone.debugNode.setDepthWrite(False)
+                parentDebugNode.setBin("fixed", 0)
+                parentDebugNode.setDepthTest(False)
+                parentDebugNode.setDepthWrite(False)
 
-    
-            self.debugDisplayNodes.append( axes )
-            self.debugDisplayNodes.append( point )
-            self.debugDisplayNodes.append( n )
-            if drawConstraints:
-                self.debugDisplayNodes.append( constraints )
-                if bone.axis:
-                    self.debugDisplayNodes.append( constraintsAxis )
-    
-        #axisGeom = createAxes( 0.5, thickness=2 )
-        #axisRoot = self.charNodePath.attachNewNode( axisGeom )
-        #axisEE = self.endEffector.attachNewNode( axisGeom )
-        #if xRay:
-        #    axisRoot.setBin("fixed", 0)
-        #    axisRoot.setDepthTest(False)
-        #    axisRoot.setDepthWrite(False)
-        #    axisEE.setBin("fixed", 0)
-        #    axisEE.setDepthTest(False)
-        #    axisEE.setDepthWrite(False)
+    def removeDebugDisplay( self ):
+        for i in range(len(self.bones)):
+            bone = self.bones[i]
+            if hasattr( bone, "debugNode" ):
+                bone.debugNode.removeNode()
+                bone.debugNode = None
+
+        rootDebugNode = self.actor.find("DebugDisplay")
+        if rootDebugNode:
+            rootDebugNode.removeNode()
 
 
