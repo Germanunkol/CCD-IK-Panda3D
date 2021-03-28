@@ -12,11 +12,16 @@ class CameraControl:
 
         self.node = node
 
-        self.focusNode = render.attachNewNode("CameraFocusNode")
-        self.attachmentNode = None
-        self.attached = True
+        self.headingNode = render.attachNewNode( "CameraHeadingRotNode" )
+        self.pitchNode = self.headingNode.attachNewNode( "CameraPitchRotNode" )
+        self.node.reparentTo( self.pitchNode )
 
-        self.focusNode.attachNewNode( createAxes( 0.1 ) )
+        self.headingNode.setPos( 0, 0, 0.5 )
+
+        #self.focusNode = render.attachNewNode("CameraFocusNode")
+        self.attached = False
+
+        self.headingNode.attachNewNode( createAxes( 0.1 ) )
 
         self.focusPoint = LPoint3()
 
@@ -32,20 +37,20 @@ class CameraControl:
 
         self.zoom = 10
 
-        self.ang = 0
-        self.angY = math.pi*0.5
+
+        self.heading = 0
+        self.pitch = -45
+
+        self.node.setPos( 0, -self.zoom, 0 )
+        self.pitchNode.setHpr( 0, self.pitch, 0 )
+        self.headingNode.setHpr( self.heading, 0, 0 )
 
         self.lastMousePos = (0,0)
 
-    def toggleAttachment( self ):
-        if self.attachmentNode:
-            self.attached = not self.attached
-        else:
-            self.attached = False
-
     def attachTo( self, other ):
 
-        self.attachmentNode = other
+        self.headingNode.reparentTo( other )
+        self.headingNode.setPos( 0, 0, 0 )
         self.attached = True
 
     def wheelUp( self ):
@@ -67,10 +72,12 @@ class CameraControl:
             y = base.mouseWatcherNode.getMouseY()
             if is_down( MouseButton.two() ):
                 dx = self.lastMousePos[0] - x
-                self.ang -= dx
+                self.heading += dx*25
                 #self.ang = max( 0, min( self.ang, math.pi*0.49 ) )
                 dy = self.lastMousePos[1] - y
-                self.angY -= dy
+                self.pitch -= dy*25
+                self.pitch = max( self.pitch, -80 )
+                self.pitch = min( self.pitch, 80 )
                 #self.angY = max( 0.01, min( self.angY, math.pi ) )
         
             self.lastMousePos = (x,y)
@@ -79,31 +86,28 @@ class CameraControl:
         if is_down( self.bSpeed ):
             speed = speed*3
 
-        if self.attachmentNode and self.attached:
-            self.focusPoint = self.attachmentNode.getPos()
-        else:
-            sideways = (is_down(self.bRight)-is_down(self.bLeft))*speed
-            forward = (is_down(self.bForward)-is_down(self.bBackward))*speed
+        if not self.attached:
+            forward = (is_down(self.bRight)-is_down(self.bLeft))*speed
+            sideways = -(is_down(self.bForward)-is_down(self.bBackward))*speed
 
             quat = Quat()
-            quat.setFromAxisAngle( -180*self.ang/math.pi, LVector3f.unitZ())
+            quat.setFromAxisAngle( self.heading, LVector3f.unitZ())
             rotated = quat.xform( LVector3f( -forward, sideways, 0 ))
 
-            self.focusPoint += rotated
+            self.headingNode.setPos( self.headingNode.getPos() - rotated )
 
         
-        self.focusNode.setPos( self.focusPoint )
-
-        radius = self.zoom
         #self.angY = max( 0, min( math.pi*0.4, self.angY ) )
-        self.angY = max( self.angY, math.pi*0.1 )
-        self.angY = min( self.angY, math.pi*0.9 )
         #rY = math.sin( self.angY )
-        self.nodePos = self.focusPoint + LVector3f( math.cos(self.ang)*radius, -math.sin(self.ang)*radius, radius*math.cos( self.angY) )
+        #self.nodePos = self.focusPoint + LVector3f( math.sin(self.angY)*math.cos(self.ang)*radius, -math.sin(self.ang)*radius, radius*math.cos( self.angY) )
 
-        self.node.setPos( self.nodePos )
-        #self.node.lookAt( self.focusNode, LVector3f.unitZ() )
-        self.node.lookAt( self.focusNode )
+        self.node.lookAt( self.headingNode )
+
+        self.node.setPos( 0, -self.zoom, 0 )
+        self.pitchNode.setHpr( 0, self.pitch, 0 )
+        self.headingNode.setHpr( self.heading, 0, 0 )
+
+        print(self.heading, self.pitch, self.zoom)
 
         return Task.cont
 
