@@ -1,18 +1,14 @@
 import random
+from panda3d.core import LVector3f
+import math
 
 class Bone():
 
-    def __init__( self, offset, axis, minAng, maxAng, joint, parent=None, static=False ):
+    def __init__( self, joint, parent=None, static=False ):
 
-        self.offset = offset
-        print("offset:", offset)
-        if axis:
-            self.axis = axis.normalized()
-        else:
-            self.axis = None
-        self.minAng = minAng
-        self.maxAng = maxAng
-        self.targetAng = 0
+        self.axis = None
+        self.minAng = -math.pi*0.5
+        self.maxAng = math.pi*0.5
         self.joint = joint
         self.parent = parent
         self.static = static

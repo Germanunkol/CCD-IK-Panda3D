@@ -107,8 +107,6 @@ class CameraControl:
         self.pitchNode.setHpr( 0, self.pitch, 0 )
         self.headingNode.setHpr( self.heading, 0, 0 )
 
-        print(self.heading, self.pitch, self.zoom)
-
         return Task.cont
 
 

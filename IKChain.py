@@ -7,37 +7,21 @@ from VecUtils import *
 
 class IKChain():
 
-    def __init__( self, parent, char=None, actor=None ):
-
-        self.parent = parent
-
-        if not char:
-            # Create a character and set up the skeleton:
-            self.char = Character("IKChain")
-            self.bundle = self.char.getBundle(0)
-            self.skeleton = PartGroup(self.bundle, "<skeleton>")
-            self.charNodePath = NodePath(self.char)
-
-        else:
-            self.char = char
-            self.bundle = self.char.getBundle(0)
-            self.charNodePath = NodePath(self.char)
+    def __init__( self, actor=None ):
 
         # We need an actor to be able to control (and expose) joints. If it already exists,
         # likely because the model was loaded from a file - great then just use that.
         # However, if it doesn't exist, this means we first need to set up all the joints before
         # we create the actor, so keep it empty for now!
-        if actor:
-            self.actor = actor
-        else:
-            self.actor = None
+        self.actor = actor
 
         self.bones = []
         self.target = None
         self.targetReached = False
 
         self.debugDisplayEnabled = False
-        self.debugDisplayNodes = []
+
+        self.endEffector = None
 
     def fromArmature( character, parent, actor, jointList ):
 
@@ -113,66 +97,71 @@ class IKChain():
         chain.finalize()
         return chain
 
+    #def addBone( self, offset=None, rotAxis=None, minAng=0, maxAng=0, parentBone=None, joint=None, static=False ):
+    def addBone( self, joint, controlNode, parentBone=None, static=False ):
 
-    def addBone( self, offset=None, rotAxis=None, minAng=0, maxAng=0, parentBone=None, joint=None, static=False ):
-
-        if rotAxis:
-            rotAxis = rotAxis.normalized()
-
-        if not joint:
-            name = "joint" + str(len( self.bones ))
-
-            if rotAxis:
-                rot = Mat4.rotateMat( minAng/math.pi*180, rotAxis )
-            else:
-                rot = Mat4.identMat()
-            translate = Mat4.translateMat(offset)
-            transform = rot*translate
-        
-            if parentBone is None:
-                joint = CharacterJoint( self.char, self.bundle, self.skeleton, name, transform )
-            else:
-                joint = CharacterJoint( self.char, self.bundle, parentBone.joint, name, transform )
+        if parentBone:
+            parentIKNode = parentBone.ikNode
         else:
-            print(joint.getName())
-            print(joint.getTransform())
+            parentIKNode = self.actor
+        
+        name = joint.getName()
 
-        bone = Bone( offset, rotAxis, minAng, maxAng, joint, parent=parentBone, static=static )
+        bone = Bone( joint, parent=parentBone, static=static )
+
+        ikNode = parentIKNode.attachNewNode( name )
+        # Same local pos as the exposed joints:
+        ikNode.setPos( controlNode.getPos() )
+
+        bone.ikNode = ikNode
+        bone.controlNode = controlNode
 
         self.bones.append(bone)
 
         return bone
 
-    def finalize( self ):
+    def getBone( self, jointName ):
+        for b in self.bones:
+            if b.joint.getName() == jointName:
+                return b
+        raise Exception(f"Cannot find joint {jointName}!")
 
-        # Create an actor so we can expose and control nodes:
-        # Note: If the model was loaded from a file, the actor already exists
-        if not self.actor:
-            self.actor = Actor(self.charNodePath)#, {'simplechar' : anim})
-            self.actor.reparentTo(self.parent)
+    def setStatic( self, jointName, static=True ):
+        b = self.getBone( jointName )
+        b.static = static
 
-        # Root of the chain
-        parentIKNode = self.actor
+    def setHingeConstraint( self, jointName, axis, minAng=-math.pi, maxAng=math.pi ):
+        b = self.getBone( jointName )
+        b.axis = axis.normalized()
+        b.minAng = minAng
+        b.maxAng = maxAng
 
-        # For each bone, create:
-        # - a control node which will be used to update the bone position after IK solving
-        # - an exposed node which we can attach things to, to render them
-        # - a normal NodePath node called ikNode, which we'll use during IK solving
-        for bone in self.bones:
-            name = bone.joint.getName()
-            controlNode = self.actor.controlJoint(None, "modelRoot", name )
-            bone.controlNode = controlNode
-            #exposedNode = self.actor.exposeJoint(None, "modelRoot", name )
-            #bone.exposedNode = exposedNode
-            # Separate nodes for IK:
-            ikNode = parentIKNode.attachNewNode( name )
-            # Same local pos as the exposed joints:
-            ikNode.setPos( controlNode.getPos() )
-            bone.ikNode = ikNode
-            parentIKNode = ikNode
+        if self.debugDisplayEnabled:
+            self.debugDisplay()
 
-        self.endEffector = self.bones[-1].ikNode.attachNewNode( "EndEffector" )
-        #self.endEffector.setPos( self.bones[-1].offset )
+    #def finalize( self ):
+
+    #    # Create an actor so we can expose and control nodes:
+    #    # Note: If the model was loaded from a file, the actor already exists
+
+    #    # Root of the chain
+    #    parentIKNode = self.actor
+
+    #    # For each bone, create:
+    #    # - a control node which will be used to update the bone position after IK solving
+    #    # - an exposed node which we can attach things to, to render them
+    #    # - a normal NodePath node called ikNode, which we'll use during IK solving
+    #    for bone in self.bones:
+    #        name = bone.joint.getName()
+    #        # Separate nodes for IK:
+    #        ikNode = parentIKNode.attachNewNode( name )
+    #        # Same local pos as the exposed joints:
+    #        ikNode.setPos( controlNode.getPos() )
+    #        bone.ikNode = ikNode
+    #        parentIKNode = ikNode
+
+    #    self.endEffector = self.bones[-1].ikNode.attachNewNode( "EndEffector" )
+    #    #self.endEffector.setPos( self.bones[-1].offset )
 
     def updateIK( self, threshold = 1e-2, minIterations=1, maxIterations=10 ):
 
@@ -185,12 +174,11 @@ class IKChain():
         for bone in self.bones:
             bone.controlNode.setQuat( bone.ikNode.getQuat() )
 
-        if self.debugDisplayEnabled:
-            self.removeDebugDisplay()
-            self.createDebugDisplay()
-
 
     def inverseKinematicsCCD( self, threshold = 1e-2, minIterations=1, maxIterations=10 ):
+
+        if not self.endEffector:
+            self.endEffector = self.bones[-1].ikNode.attachNewNode( "EndEffector" )
 
         self.targetReached = False
         for i in range(maxIterations):
@@ -279,6 +267,8 @@ class IKChain():
 
         self.removeDebugDisplay()
 
+        self.debugDisplayEnabled = True
+
         axesGeom = createAxes( lineLength )
 
         for i in range(len(self.bones)):
@@ -328,7 +318,7 @@ class IKChain():
 
                     lines = LineSegs()
                     lines.setColor( 0.6, 0.3, 0.3 )
-                    lines.setThickness( 3 )
+                    lines.setThickness( 5 )
                     lines.moveTo( 0,0,0 )
                     lines.drawTo( l )
                     bone.debugNode.attachNewNode(lines.create())
@@ -365,7 +355,7 @@ class IKChain():
                 if bone.axis:
                     lines = LineSegs()
                     lines.setColor( 0.8, 0.8, 0.8 )
-                    lines.setThickness( 5 )
+                    lines.setThickness( 4 )
                     myPos = bone.ikNode.getPos( parentNode )
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + bone.axis*0.1 )
