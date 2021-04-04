@@ -14,12 +14,12 @@ class Bone():
         self.static = static
         self.controlNode = None
         self.exposedNode = None
-        self.ikNode = None
+        #self.ikNode = None
         self.children = []
         if parent:
             self.parent.addChild( self )
     
-        self.col = ( 0.5, 0.5, 0.5 )
+        self.col = ( 0.2, 0.2, 0.5 )
 
     def addChild( self, child ):
         if not child in self.children:

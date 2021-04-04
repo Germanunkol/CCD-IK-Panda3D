@@ -101,7 +101,7 @@ class IKChain():
     def addBone( self, joint, controlNode, parentBone=None, static=False ):
 
         if parentBone:
-            parentIKNode = parentBone.ikNode
+            parentIKNode = parentBone.controlNode
         else:
             parentIKNode = self.actor
         
@@ -109,11 +109,11 @@ class IKChain():
 
         bone = Bone( joint, parent=parentBone, static=static )
 
-        ikNode = parentIKNode.attachNewNode( name )
+        #ikNode = parentIKNode.attachNewNode( name )
         # Same local pos as the exposed joints:
-        ikNode.setPos( controlNode.getPos() )
+        #ikNode.setPos( controlNode.getPos() )
 
-        bone.ikNode = ikNode
+        #bone.ikNode = ikNode
         bone.controlNode = controlNode
 
         self.bones.append(bone)
@@ -172,13 +172,13 @@ class IKChain():
         # Copy the data from the IK chain to the actual bones.
         # This will end up affecting the actual mesh.
         for bone in self.bones:
-            bone.controlNode.setQuat( bone.ikNode.getQuat() )
+            bone.controlNode.setQuat( bone.controlNode.getQuat() )
 
 
     def inverseKinematicsCCD( self, threshold = 1e-2, minIterations=1, maxIterations=10 ):
 
         if not self.endEffector:
-            self.endEffector = self.bones[-1].ikNode.attachNewNode( "EndEffector" )
+            self.endEffector = self.bones[-1].controlNode.attachNewNode( "EndEffector" )
 
         self.targetReached = False
         for i in range(maxIterations):
@@ -195,9 +195,9 @@ class IKChain():
                 if bone.static:
                     continue
 
-                boneNode = bone.ikNode
+                boneNode = bone.controlNode
                 if bone.parent:
-                    parentNode = bone.parent.ikNode
+                    parentNode = bone.parent.controlNode
                 else:
                     parentNode = self.actor
 
@@ -278,7 +278,7 @@ class IKChain():
             # This is only for cleaner removal of the node later on - by remuving the debug node,
             # all debug info will be cleared. Otherwise this node has no significance and we could
             # just as well attach everything to the ikNode itself
-            bone.debugNode = bone.ikNode.attachNewNode("DebugDisplay")
+            bone.debugNode = bone.controlNode.attachNewNode("DebugDisplay")
             bone.debugNode.setLightOff(1)
 
             # Draw axes at my location and rotation (i.e. after applying my transform to my parent):
@@ -288,7 +288,7 @@ class IKChain():
             # Retrieve parent space:
             if bone.parent:
                 # If we have a parent, then this parent is a bone.
-                parentNode = bone.parent.ikNode
+                parentNode = bone.parent.controlNode
             else:
                 # Otherwise the parent is the actor itself, i.e. the root of the skeleton
                 parentNode = self.actor
@@ -305,7 +305,7 @@ class IKChain():
             lines.setThickness( 3 )
             lines.setColor( bone.col[0], bone.col[1], bone.col[2], 1 )
             lines.moveTo( 0, 0, 0 )
-            myPos = bone.ikNode.getPos( parentNode )
+            myPos = bone.controlNode.getPos( parentNode )
             lines.drawTo( myPos )
             geom = lines.create()
             parentDebugNode.attachNewNode( geom )
@@ -356,7 +356,7 @@ class IKChain():
                     lines = LineSegs()
                     lines.setColor( 0.8, 0.8, 0.8 )
                     lines.setThickness( 4 )
-                    myPos = bone.ikNode.getPos( parentNode )
+                    myPos = bone.controlNode.getPos( parentNode )
                     lines.moveTo( myPos )
                     lines.drawTo( myPos + bone.axis*0.1 )
                     geom = lines.create()

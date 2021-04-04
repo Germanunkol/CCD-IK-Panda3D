@@ -28,6 +28,15 @@ class IKActor():
             self.joints[j.getName()] = j
             print(j.getName(), j.getTransform())
 
+        #for j in joints:
+        #    print("j", j.getName())
+        #    parentControlNode = self.getControlNode( j.getName() )
+        #    for c in j.getChildren():
+        #        print("child", c.getName())
+
+        #print("LS")
+        #self.actor.ls()
+
     def reparentTo( self, parent ):
 
         self.actor.reparentTo( parent )
@@ -65,8 +74,12 @@ class IKActor():
             joint = self.joints[jointName]
             controlNode = self.getControlNode( jointName )
             newBone = chain.addBone( joint, controlNode, parentBone=parentBone )
+            if parentBone:
+                controlNode.reparentTo( parentBone.controlNode )
+            else:
+                controlNode.reparentTo( self.actor )
             parentBone = newBone
 
-        chain.debugDisplay()
+        #chain.debugDisplay()
 
         return chain
