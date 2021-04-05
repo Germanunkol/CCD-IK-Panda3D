@@ -24,6 +24,7 @@ class FootArc():
         # Variable height changing from 0 to 1 and back to 0
         # TODO: Replace by cheaper function?
         height = math.sin( stepFraction*math.pi )
+        #height = math.sin((1-stepFraction)*(1-stepFraction)*math.pi)
 
         self.curPos = self.startPos + self.stepDiff*stepFraction +\
                 self.offsetDir*self.stepHeight*height

@@ -18,13 +18,15 @@ class RiggedChar():
         # Set up main body:
 
         self.rootNode = render.attachNewNode("Torso")
-        self.rootHeight = 0     # Distance between root node and the ground
-        self.rootNode.setPos( 0, 0, self.rootHeight )
         geom = createAxes( 0.3 )
         self.rootNode.attachNewNode( geom )
-        # How high the root node should currently be. Determined by the average position of all
-        # grounded feet.
-        self.curTargetHeight = 0
+
+        # How high the root node should currently be (Determined by the average position of all
+        # grounded feet):
+        self.rootHeight = 0.956756    # Distance between root node and the ground
+        #self.rootHeight = 0
+        self.rootNode.setPos( 0, 0, self.rootHeight )
+        self.curTargetHeight = self.rootHeight
         self.heightAdjustmentSpeed = 0.4
 
 
@@ -41,9 +43,7 @@ class RiggedChar():
         ##################################
         # Set up legs:
 
-        self.model = loader.loadModel( "Meshes/CharacterRigged.bam" )
-
-        print(self.model.findAllMaterials())
+        self.model = loader.loadModel( "Meshes/person.bam" )
 
         # Standard material:
         m = Material()
@@ -55,60 +55,71 @@ class RiggedChar():
         self.ikActor.reparentTo( self.rootNode )
         self.ikActor.actor.setMaterial(m)
 
-        render.find("**/Body").setMaterial(m)
+        #render.find("**/Body").setMaterial(m)
         #render.find("**/Body").setShaderAuto()
 
 #        rootBone = actor.exposeJoint(None, "modelRoot", "Bone")
 #        rootBoneControl = actor.controlJoint(None, "modelRoot", "Bone")
 #        rootBoneControl.setHpr( 45, 45, 45 )
 
-        self.ikChainLegLeft = self.ikActor.createIKChain( ["Torso", "Leg_L", "Leg_L.001", "Leg_L.002", "Foot_L"] )
-
-        self.ikChainLegLeft.setStatic( "Torso" )
-        self.ikChainLegLeft.setHingeConstraint( "Leg_L", axis=LVector3f.unitZ(),
+        self.ikChainLegLeft = self.ikActor.createIKChain( ["Hip.L", "UpperLeg.L", "LowerLeg.L", "Foot.L"] )
+        #self.ikChainLegLeft.setStatic( "Hips" )
+        self.ikChainLegLeft.setHingeConstraint( "Hip.L", axis=LVector3f.unitZ(),
                 minAng=-math.pi*0.05, maxAng=math.pi*0.05 )
-        self.ikChainLegLeft.setHingeConstraint( "Leg_L.001", axis=LVector3f.unitX(),
-                minAng=0, maxAng=math.pi*0.5 )
-        self.ikChainLegLeft.setHingeConstraint( "Leg_L.002", axis=LVector3f.unitX(),
-                minAng=-math.pi*0.5, maxAng=0 )
+        self.ikChainLegLeft.setHingeConstraint( "UpperLeg.L", axis=LVector3f.unitX(),
+                minAng=-math.pi*0.2, maxAng=math.pi*0.2 )
+        self.ikChainLegLeft.setHingeConstraint( "LowerLeg.L", axis=LVector3f.unitX(),
+                minAng=-math.pi*0.5, maxAng=-math.pi*0.05 )
+        self.ikChainLegLeft.setHingeConstraint( "Foot.L", axis=LVector3f.unitX(),
+                minAng=-math.pi*0.5, maxAng=math.pi*0.5 )
 
 
-        self.ikChainLegRight = self.ikActor.createIKChain( ["Torso", "Leg_R", "Leg_R.001", "Leg_R.002", "Foot_R"] )
-        self.ikChainLegRight.setStatic( "Torso" )
-
-        self.ikChainLegRight.setHingeConstraint( "Leg_R", axis=LVector3f.unitZ(),
+        self.ikChainLegRight = self.ikActor.createIKChain( ["Hip.R", "UpperLeg.R", "LowerLeg.R", "Foot.R"] )
+        #self.ikChainLegRight.setStatic( "Hips" )
+        self.ikChainLegRight.setHingeConstraint( "Hip.R", axis=LVector3f.unitZ(),
                 minAng=-math.pi*0.05, maxAng=math.pi*0.05 )
-        self.ikChainLegRight.setHingeConstraint( "Leg_R.001", axis=LVector3f.unitX(),
-                minAng=0, maxAng=math.pi*0.5 )
-        self.ikChainLegRight.setHingeConstraint( "Leg_R.002", axis=LVector3f.unitX(),
-                minAng=-math.pi*0.5, maxAng=0 )
+        self.ikChainLegRight.setHingeConstraint( "UpperLeg.R", axis=LVector3f.unitX(),
+                minAng=-math.pi*0.2, maxAng=math.pi*0.2 )
+        self.ikChainLegRight.setHingeConstraint( "LowerLeg.R", axis=LVector3f.unitX(),
+                minAng=-math.pi*0.5, maxAng=-math.pi*0.05 )
+        self.ikChainLegRight.setHingeConstraint( "Foot.R", axis=LVector3f.unitX(),
+                minAng=-math.pi*0.5, maxAng=math.pi*0.5 )
 
 
-        self.ikChainLegLeft.updateIK()
-        self.ikChainLegRight.updateIK()
+        #self.ikChainLegLeft.updateIK()
+        #self.ikChainLegRight.updateIK()
 
         #################################################
         # Set up arm chains:
 
-        self.ikChainArmLeft = self.ikActor.createIKChain( ["Torso","Shoulder_L", "Ellbow_L", "Hand_L"] )
-        self.ikChainArmLeft.setStatic( "Torso" )
-        self.ikChainArmLeft.setHingeConstraint( "Shoulder_L", axis=LVector3f.unitX(),
-                minAng=-math.pi*0.2, maxAng=math.pi*0.2 )
-        self.ikChainArmLeft.setHingeConstraint( "Ellbow_L", axis=LVector3f.unitX(),
-                minAng=0, maxAng=math.pi*0.7 )
-        self.ikChainArmRight = self.ikActor.createIKChain( ["Torso","Shoulder_R", "Ellbow_R", "Hand_R"] )
-        self.ikChainArmRight.setStatic( "Torso" )
-        self.ikChainArmRight.setHingeConstraint( "Shoulder_R", axis=LVector3f.unitX(),
-                minAng=-math.pi*0.2, maxAng=math.pi*0.2 )
-        self.ikChainArmRight.setHingeConstraint( "Ellbow_R", axis=LVector3f.unitX(),
-                minAng=0, maxAng=math.pi*0.7 )
+        self.ikChainArmLeft = self.ikActor.createIKChain( ["Shoulder.L", "UpperArm.L", "LowerArm.L", "Hand.L"] )
+        self.ikChainArmLeft.setHingeConstraint( "Shoulder.L", axis=LVector3f.unitZ(),
+                minAng=math.pi*0.05, maxAng=math.pi*0.05 )
+        self.ikChainArmLeft.setHingeConstraint( "UpperArm.L", axis=LVector3f.unitY(),
+                minAng=-math.pi*0.5, maxAng=math.pi*0.5 )
+        self.ikChainArmLeft.setHingeConstraint( "LowerArm.L", axis=LVector3f.unitZ(),
+                minAng=-math.pi*0.5, maxAng=0 )
+        self.ikChainArmLeft.setHingeConstraint( "Hand.L", axis=LVector3f.unitX(),
+                minAng=-math.pi*0.3, maxAng=math.pi*0.3 )
+
+        self.ikChainArmRight = self.ikActor.createIKChain( ["Shoulder.R", "UpperArm.R", "LowerArm.R", "Hand.R"] )
+        self.ikChainArmRight.setHingeConstraint( "Shoulder.R", axis=LVector3f.unitZ(),
+                minAng=math.pi*0.05, maxAng=math.pi*0.05 )
+        self.ikChainArmRight.setHingeConstraint( "UpperArm.R", axis=LVector3f.unitY(),
+                minAng=-math.pi*0.5, maxAng=math.pi*0.5 )
+        self.ikChainArmRight.setHingeConstraint( "LowerArm.R", axis=LVector3f.unitZ(),
+                minAng=0, maxAng=math.pi*0.5 )
+        self.ikChainArmRight.setHingeConstraint( "Hand.R", axis=LVector3f.unitX(),
+                minAng=-math.pi*0.3, maxAng=math.pi*0.3 )
+
+
 
         ############################
 
-        #self.ikChainLegLeft.debugDisplay( lineLength=0.1 )
-        #self.ikChainLegRight.debugDisplay( lineLength=0.1 )
-        #self.ikChainArmLeft.debugDisplay( lineLength=0.1 )
-        #self.ikChainArmRight.debugDisplay( lineLength=0.1 )
+        self.ikChainLegLeft.debugDisplay( lineLength=0.1 )
+        self.ikChainLegRight.debugDisplay( lineLength=0.1 )
+        self.ikChainArmLeft.debugDisplay( lineLength=0.1 )
+        self.ikChainArmRight.debugDisplay( lineLength=0.1 )
 
         #################################################
         # Foot targets:
@@ -136,34 +147,44 @@ class RiggedChar():
         self.plannedRotation = self.rootNode.attachNewNode( "PlannedRotationNode" )
         self.plannedFootTargetLeft = self.plannedRotation.attachNewNode( "PlannedFootTargetLeft" )
         self.plannedFootTargetRight = self.plannedRotation.attachNewNode( "PlannedFootTargetRight" )
+        # Get distance from root bone to foot bone. This is the length of the leg, i.e. it tells
+        # us how far the planned foot position should be away from the root:
+        footNode = self.ikActor.getControlNode( "Foot.L" )
+        footPos = footNode.getPos( self.rootNode )
+        footHeight = self.rootHeight + footPos.getZ()
+        self.footOutwards = abs(footPos.getX())
+        self.footHeightOffset = LVector3f(0,0,footHeight)
+        print("Foot height:", footHeight, self.rootHeight, footNode, footNode.getPos( self.rootNode ))
 
-        self.stepDist = 0.4     # Length of a step
-        self.plannedFootTargetLeft.setPos( -0.15, self.stepDist, 0 )
-        self.plannedFootTargetRight.setPos( 0.15, self.stepDist, 0 )
+        self.stepDist = 0.3     # Length of a step
+        self.plannedFootTargetLeft.setPos( -self.footOutwards, self.stepDist, 0 )
+        self.plannedFootTargetRight.setPos( self.footOutwards, self.stepDist, 0 )
         self.plannedFootTargetLeft.attachNewNode( geom )
         self.plannedFootTargetRight.attachNewNode( geom )
 
-        self.legMovementSpeed = self.walkSpeed*2.5
+        self.legMovementSpeed = self.walkSpeed*2
 
         self.stepArcLeft = None
         self.stepArcRight = None
         
-        self.walkCycle = WalkCycle( 2, 0.75 )
+        self.walkCycle = WalkCycle( 2, 0.5 )
 
         #self.noise = PerlinNoise2()
         #self.noise.setScale( 0.1, 0.1 )
 
         self.handBasePosLeft = self.rootNode.attachNewNode("HandTargetLeft")
-        self.handBasePosLeft.setPos( self.ikChainArmLeft.bones[-1].controlNode.getPos( self.rootNode ) )
+        self.handBasePosLeft.setPos( -0.3, 0, -0.3 )
         self.handTargetLeft = self.handBasePosLeft.attachNewNode("HandTargetLeft")
 
         self.handBasePosRight = self.rootNode.attachNewNode("HandTargetRight")
-        self.handBasePosRight.setPos( self.ikChainArmRight.bones[-1].controlNode.getPos( self.rootNode ) )
+        self.handBasePosRight.setPos( 0.3, 0, -0.3 )
         self.handTargetRight = self.handBasePosRight.attachNewNode("HandTargetRight")
 
         self.ikChainArmLeft.setTarget( self.handTargetLeft )
         self.ikChainArmRight.setTarget( self.handTargetRight )
 
+        self.handTargetLeft.attachNewNode( geom )
+        self.handTargetRight.attachNewNode( geom )
         
 
         ###########################################
@@ -210,16 +231,17 @@ class RiggedChar():
         ##################################
         # Control upper body:
         #self.torsoBone = self.ikActor.getControlNode( "Torso" )
-        self.torsoBone = self.ikActor.getControlNode( "Torso" )
-        self.torsoBone.setHpr( 0, -6, 0 )
+        self.torsoBone = self.ikActor.getControlNode( "LowerSpine" )
+        #self.torsoBone.setHpr( 0, -2, 0 )
 
+        #self.rootBone = self.ikActor.getControlNode( "Hips" )
 
     def speedUp( self ):
         self.walkSpeed += 0.25
         self.walkSpeed = min(self.walkSpeed, 3)
         self.turnSpeed = self.walkSpeed*2
         self.heightAdjustmentSpeed = self.walkSpeed*0.5
-        self.legMovementSpeed = 0.5 + self.walkSpeed*1.2
+        self.legMovementSpeed = 0.3 + self.walkSpeed*1.2
 
     def slowDown( self ):
         self.walkSpeed -= 0.25
@@ -227,7 +249,7 @@ class RiggedChar():
         self.turnSpeed = self.walkSpeed*2
         self.heightAdjustmentSpeed = self.walkSpeed*0.5
         #self.legMovementSpeed = self.walkSpeed*3
-        self.legMovementSpeed = 0.5 + self.walkSpeed*1.2
+        self.legMovementSpeed = 0.3 + self.walkSpeed*1.2
 
     def walk( self, task ):
 
@@ -283,11 +305,11 @@ class RiggedChar():
         heightAdjustment = self.curTargetHeight - curPos.getZ()
         limit = self.heightAdjustmentSpeed * globalClock.getDt()
         heightAdjustment = min( max( heightAdjustment, -limit), limit )
-        self.rootNode.setPos( curPos.getX(), curPos.getY(), curPos.getZ() + heightAdjustment )
+        #self.rootNode.setPos( curPos.getX(), curPos.getY(), curPos.getZ() + heightAdjustment )
 
         # Rotate torso:
         cycle = math.sin( self.walkCycle.cycleTime/self.walkCycle.cycleDuration*math.pi*2 )
-        #self.torsoBone.setHpr( -6*cycle, -6, 0 )
+        self.torsoBone.setHpr( -6*cycle, -2, 0 )
 
         #############################
         # Update arms:
@@ -311,11 +333,11 @@ class RiggedChar():
         curStepDist = 0
         if curWalkSpeed > 0:
             curStepDist = self.stepDist + self.walkSpeed*0.2
-        p = LVector3f( -0.15, curStepDist, 0 )
+        p = LVector3f( -self.footOutwards, curStepDist, 0 )
         pw = render.getRelativePoint( self.plannedRotation, p )
         #p.z = self.noise( pw.x, pw.y )*0.05 + 0.05
         self.plannedFootTargetLeft.setPos( p )
-        p = LVector3f( 0.15, curStepDist, 0 )
+        p = LVector3f( self.footOutwards, curStepDist, 0 )
         pw = render.getRelativePoint( self.plannedRotation, p )
         #p.z = self.noise( pw.x, pw.y )*0.05 + 0.05
         self.plannedFootTargetRight.setPos( p )
@@ -326,7 +348,8 @@ class RiggedChar():
         if self.walkCycle.stepRequired[0]:
             #self.footTargetLeft.setPos( self.plannedFootTargetLeft.getPos( render ) )
             self.walkCycle.step( 0 )    # Tell walk cycle that step has been taken
-            h = min( curWalkSpeed*0.1, 0.3)
+            #h = min( curWalkSpeed*0.2, 0.3)
+            h = 0.05
             targetPos = self.findGroundPos( self.plannedFootTargetLeft.getPos( self.rootNode ) )
             self.stepArcLeft = FootArc( self.footTargetLeft.getPos(),
                     render.getRelativePoint( self.rootNode, targetPos ), stepHeight=h )
@@ -334,7 +357,8 @@ class RiggedChar():
         if self.walkCycle.stepRequired[1]:
             #self.footTargetRight.setPos( self.plannedFootTargetRight.getPos( render ) )
             self.walkCycle.step( 1 )    # Tell walk cycle that step has been taken
-            h = min( curWalkSpeed*0.1, 0.3)
+            #h = min( curWalkSpeed*0.2, 0.3)
+            h = 0.05
             targetPos = self.findGroundPos( self.plannedFootTargetRight.getPos( self.rootNode ) )
             self.stepArcRight = FootArc( self.footTargetRight.getPos(),
                     render.getRelativePoint( self.rootNode, targetPos ), stepHeight=h )
@@ -342,19 +366,31 @@ class RiggedChar():
         if self.stepArcLeft:
             legMoveDist = self.legMovementSpeed*globalClock.dt
             self.stepArcLeft.update( legMoveDist )
-            self.footTargetLeft.setPos( self.stepArcLeft.getPos() )
+            self.footTargetLeft.setPos( self.stepArcLeft.getPos() + self.footHeightOffset )
             if self.stepArcLeft.done():
                 self.stepArcLeft = None
 
         if self.stepArcRight:
             legMoveDist = self.legMovementSpeed*globalClock.dt
             self.stepArcRight.update( legMoveDist )
-            self.footTargetRight.setPos( self.stepArcRight.getPos() )
+            self.footTargetRight.setPos( self.stepArcRight.getPos() + self.footHeightOffset )
             if self.stepArcRight.done():
                 self.stepArcRight = None
 
         self.ikChainLegLeft.updateIK()
         self.ikChainLegRight.updateIK()
+
+        ##################################
+        ## Let toes always face horizontally:
+        ## Note: Not sure if this works correctly yet!
+
+        toeNode = self.ikActor.getControlNode( "Toes.L" )
+        hpr = toeNode.getHpr( self.rootNode )
+        toeNode.setHpr( self.rootNode, hpr.getX(), 0, hpr.getZ() )
+
+        toeNode = self.ikActor.getControlNode( "Toes.R" )
+        hpr = toeNode.getHpr( self.rootNode )
+        toeNode.setHpr( self.rootNode, hpr.getX(), 0, hpr.getZ() )
 
         return task.cont
 
@@ -372,8 +408,8 @@ class RiggedChar():
     def newRandomTarget( self ):
 
         self.targetNode.setPos(
-                LVector3f( random.random()*10-5,
-                    random.random()*10-5,
+                LVector3f( random.random()*9-4.5,
+                    random.random()*9-4.5,
                     0 ) )
 
 

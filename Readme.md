@@ -55,3 +55,16 @@ Setting up mesh with bones:
 ---------------------------
 - When exporting from blender, make sure there is a vertex group for every bone - even if it's empty (i.e. if you have a bone called "Bone.002" there must be a vertex group called "Bone.002"). Otherwise, the bone gets positioned at the model root by Panda3D, and offsets are no longer correct. Hint: in blender, these vertex groups are set up automatically when parenting an armature to the mesh and selecting the automatic weight assignment.
 - Make sure every bone is connected to its predecessor.
+
+- Make sure the mesh itself has _no_ transformation applied. In Blender before exporting, select the mesh (not the armature!) go to Object Mode and select "Object->Clear->Location". Same goes for scale and rotation.
+
+Hints:
+--------
+- When animating something like a leg, make sure target is usually reached, otherwise you loose control
+
+License:
+---------------------------
+
+MIT License. See "LICENSE" file for details.
+
+Note: The samples use a rigged character mesh by Clint Bellanger (Thanks!), licened under CC0. The original source is: https://opengameart.org/content/very-low-poly-human

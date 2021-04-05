@@ -28,11 +28,19 @@ class IKActor():
             self.joints[j.getName()] = j
             print(j.getName(), j.getTransform())
 
-        #for j in joints:
-        #    print("j", j.getName())
-        #    parentControlNode = self.getControlNode( j.getName() )
-        #    for c in j.getChildren():
-        #        print("child", c.getName())
+        for jointName, j in self.joints.items():
+            parentControlNode = self.getControlNode( jointName )
+            for c in j.getChildren():
+                print("child", c.getName())
+                childControlNode = self.getControlNode( c.getName() )
+                childControlNode.reparentTo( parentControlNode )
+
+        # Find all nodes which have no parent yet. Those should be repatented to the actor itself:
+        for jointName, j in self.joints.items():
+            cn = self.getControlNode( jointName )
+            if not cn.getParent():
+                print(f"Re-parenting {name} to root!")
+                cn.reparentTo( self.actor )
 
         #print("LS")
         #self.actor.ls()
@@ -74,10 +82,6 @@ class IKActor():
             joint = self.joints[jointName]
             controlNode = self.getControlNode( jointName )
             newBone = chain.addBone( joint, controlNode, parentBone=parentBone )
-            if parentBone:
-                controlNode.reparentTo( parentBone.controlNode )
-            else:
-                controlNode.reparentTo( self.actor )
             parentBone = newBone
 
         #chain.debugDisplay()
