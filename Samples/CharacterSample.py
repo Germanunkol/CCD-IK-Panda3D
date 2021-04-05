@@ -309,7 +309,7 @@ class RiggedChar():
 
         # Rotate torso:
         cycle = math.sin( self.walkCycle.cycleTime/self.walkCycle.cycleDuration*math.pi*2 )
-        self.torsoBone.setHpr( -6*cycle, -2, 0 )
+        self.torsoBone.setHpr( -4*cycle, -2, 0 )
 
         #############################
         # Update arms:
