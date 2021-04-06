@@ -3,7 +3,7 @@ from panda3d.core import LVector3f
 
 class FootArc():
 
-    def __init__( self, startPos, endPos, offsetDir=LVector3f.unitZ(), stepHeight=0.1 ):
+    def __init__( self, startPos, endPos, offsetDir=LVector3f.unitZ(), maxStepHeight=0.1, maxStepDist=0.4 ):
 
         self.startPos = startPos
         self.endPos = endPos
@@ -11,8 +11,14 @@ class FootArc():
         self.fullStepLength = self.stepDiff.length()
         self.curStepLength = 0
         self.offsetDir = offsetDir
-        self.stepHeight = stepHeight
         self.curPos = self.startPos
+
+        # Calculate the step height, depending on the distance of the step. If it's a very small
+        # step (i.e. much smaller than the norm step dist "maxStepDist"), then also don't lift the
+        # foot as high as you normally would:
+        stepDist = (startPos - endPos).length()
+        self.stepHeight = maxStepHeight*min(stepDist/maxStepDist, 1)
+        print("step height", self.stepHeight)
 
     def update( self, amount ):
 

@@ -27,7 +27,6 @@ class RiggedChar():
         #self.rootHeight = 0
         self.rootNode.setPos( 0, 0, self.rootHeight )
         self.curTargetHeight = self.rootHeight
-        self.heightAdjustmentSpeed = 0.4
 
 
         ##################################
@@ -38,6 +37,7 @@ class RiggedChar():
         #self.targetNode.attachNewNode( geom )
         self.walkSpeed = 0.5  # m/s
         self.turnSpeed = 1
+        self.heightAdjustmentSpeed = self.walkSpeed
         self.newRandomTarget()
 
         ##################################
@@ -127,7 +127,7 @@ class RiggedChar():
         # Set up two targets that the foot should reach:
         self.footTargetLeft = render.attachNewNode("FootTargetLeft")
         self.footTargetRight = render.attachNewNode("FootTargetRight")
-        geom = createAxes( 0.1 )
+        geom = createAxes( 0.15 )
         self.footTargetLeft.attachNewNode( geom )
         self.footTargetRight.attachNewNode( geom )
         self.ikChainLegLeft.setTarget( self.footTargetLeft )
@@ -156,7 +156,7 @@ class RiggedChar():
         self.footHeightOffset = LVector3f(0,0,footHeight)
         print("Foot height:", footHeight, self.rootHeight, footNode, footNode.getPos( self.rootNode ))
 
-        self.stepDist = 0.3     # Length of a step
+        self.stepDist = 0.35     # Length of a step
         self.plannedFootTargetLeft.setPos( -self.footOutwards, self.stepDist, 0 )
         self.plannedFootTargetRight.setPos( self.footOutwards, self.stepDist, 0 )
         self.plannedFootTargetLeft.attachNewNode( geom )
@@ -240,15 +240,14 @@ class RiggedChar():
         self.walkSpeed += 0.25
         self.walkSpeed = min(self.walkSpeed, 3)
         self.turnSpeed = self.walkSpeed*2
-        self.heightAdjustmentSpeed = self.walkSpeed*0.5
+        self.heightAdjustmentSpeed = self.walkSpeed
         self.legMovementSpeed = 0.3 + self.walkSpeed*1.2
 
     def slowDown( self ):
         self.walkSpeed -= 0.25
         self.walkSpeed = max(self.walkSpeed, 0)
         self.turnSpeed = self.walkSpeed*2
-        self.heightAdjustmentSpeed = self.walkSpeed*0.5
-        #self.legMovementSpeed = self.walkSpeed*3
+        self.heightAdjustmentSpeed = self.walkSpeed
         self.legMovementSpeed = 0.3 + self.walkSpeed*1.2
 
     def walk( self, task ):
@@ -289,7 +288,7 @@ class RiggedChar():
         curWalkSpeed = curWalkDist/globalClock.getDt()
 
         update = curWalkDist*0.75
-        update += angClamped*0.75
+        update += angClamped*0.5
         self.walkCycle.updateTime( update )
 
         curPos = self.rootNode.getPos()
@@ -299,13 +298,19 @@ class RiggedChar():
         #elif not self.stepArcRight and self.stepArcLeft:
         #    self.curTargetHeight = self.footTargetRight.getPos().getZ()
         #elif not self.stepArcLeft and not self.stepArcRight:
-        self.curTargetHeight = 0.5*(self.footTargetLeft.getPos().getZ() +\
-                self.footTargetRight.getPos().getZ())
+        footPosL = self.footTargetLeft.getPos()
+        #if self.stepArcLeft:
+        #    footPosL = self.stepArcLeft.endPos
+        footPosR = self.footTargetRight.getPos()
+        #if self.stepArcRight:
+        #    footPosR = self.stepArcRight.endPos
+        self.curTargetHeight = 0.5*(footPosL.getZ() +\
+                footPosR.getZ()) + self.rootHeight - self.footHeightOffset.getZ()
 
         heightAdjustment = self.curTargetHeight - curPos.getZ()
         limit = self.heightAdjustmentSpeed * globalClock.getDt()
         heightAdjustment = min( max( heightAdjustment, -limit), limit )
-        #self.rootNode.setPos( curPos.getX(), curPos.getY(), curPos.getZ() + heightAdjustment )
+        self.rootNode.setPos( curPos.getX(), curPos.getY(), curPos.getZ() + heightAdjustment )
 
         # Rotate torso:
         cycle = math.sin( self.walkCycle.cycleTime/self.walkCycle.cycleDuration*math.pi*2 )
@@ -314,8 +319,8 @@ class RiggedChar():
         #############################
         # Update arms:
 
-        self.handTargetLeft.setPos( 0, -cycle*min(curWalkSpeed*0.12,0.3), 0 )
-        self.handTargetRight.setPos( 0, cycle*min(curWalkSpeed*0.12,0.3), 0 )
+        self.handTargetLeft.setPos( 0, -cycle*min(curWalkSpeed*0.16,0.3)+0.1, 0 )
+        self.handTargetRight.setPos( 0, cycle*min(curWalkSpeed*0.16,0.3)+0.1, 0 )
 
         self.ikChainArmLeft.updateIK()
         self.ikChainArmRight.updateIK()
@@ -330,7 +335,7 @@ class RiggedChar():
 
         # Move planned foot target further forward (longer steps) when character is
         # walking faster:
-        curStepDist = 0
+        curStepDist = 0.1
         if curWalkSpeed > 0:
             curStepDist = self.stepDist + self.walkSpeed*0.2
         p = LVector3f( -self.footOutwards, curStepDist, 0 )
@@ -351,8 +356,12 @@ class RiggedChar():
             #h = min( curWalkSpeed*0.2, 0.3)
             h = 0.05
             targetPos = self.findGroundPos( self.plannedFootTargetLeft.getPos( self.rootNode ) )
-            self.stepArcLeft = FootArc( self.footTargetLeft.getPos(),
-                    render.getRelativePoint( self.rootNode, targetPos ), stepHeight=h )
+            print("targetPos", targetPos)
+            print( "footTargetPOs", self.footTargetLeft.getPos() )
+            print( "targetPos rel", render.getRelativePoint( self.rootNode, targetPos ) )
+            self.stepArcLeft = FootArc( self.footTargetLeft.getPos() - self.footHeightOffset,
+                    render.getRelativePoint( self.rootNode, targetPos ), maxStepHeight=h )
+            print( "curPos", self.stepArcLeft.getPos() )
 
         if self.walkCycle.stepRequired[1]:
             #self.footTargetRight.setPos( self.plannedFootTargetRight.getPos( render ) )
@@ -360,8 +369,8 @@ class RiggedChar():
             #h = min( curWalkSpeed*0.2, 0.3)
             h = 0.05
             targetPos = self.findGroundPos( self.plannedFootTargetRight.getPos( self.rootNode ) )
-            self.stepArcRight = FootArc( self.footTargetRight.getPos(),
-                    render.getRelativePoint( self.rootNode, targetPos ), stepHeight=h )
+            self.stepArcRight = FootArc( self.footTargetRight.getPos() - self.footHeightOffset,
+                    render.getRelativePoint( self.rootNode, targetPos ), maxStepHeight=h )
 
         if self.stepArcLeft:
             legMoveDist = self.legMovementSpeed*globalClock.dt
@@ -444,12 +453,12 @@ if __name__ == "__main__":
             axes = createAxes( 1000, bothways=True, thickness=3 )
             render.attachNewNode( axes )
 
-            terrain = CollisionTerrain( 5, 0.25, render, height=0 )
+            terrain = CollisionTerrain( 5, 0.25, render, height=1 )
 
             #####################################
             # Set up character
             self.character = RiggedChar( terrain )
-            self.character2 = RiggedChar( terrain )
+            #self.character2 = RiggedChar( terrain )
 
             #####################################
             # Set up Camera and input:
