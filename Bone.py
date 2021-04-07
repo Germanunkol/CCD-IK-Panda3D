@@ -1,26 +1,25 @@
 import random
+from panda3d.core import LVector3f
+import math
 
 class Bone():
 
-    def __init__( self, offset, axis, minAng, maxAng, joint, parent=None ):
+    def __init__( self, joint, parent=None, static=False ):
 
-        self.offset = offset
-        self.axis = axis
-        if axis:
-            self.axis = self.axis.normalized()
-        self.minAng = minAng
-        self.maxAng = maxAng
-        self.targetAng = 0
+        self.axis = None
+        self.minAng = -math.pi
+        self.maxAng = math.pi
         self.joint = joint
         self.parent = parent
+        self.static = static
         self.controlNode = None
         self.exposedNode = None
-        self.ikNode = None
+        #self.ikNode = None
         self.children = []
         if parent:
             self.parent.addChild( self )
     
-        self.col = (random.random(), random.random(), random.random())
+        self.col = ( 0.2, 0.2, 0.5 )
 
     def addChild( self, child ):
         if not child in self.children:

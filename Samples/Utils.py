@@ -1,6 +1,7 @@
 
 from panda3d.core import *
 import random, math
+from direct.gui.OnscreenText import OnscreenText
 
 # Join two indices to make one unique index:
 def joinInds( i, j, base=1000 ):
@@ -161,4 +162,29 @@ def getRotationBetween( src, dest, fallbackAxis=LVector3f.zero() ):
         q.normalize()
         
     return q
+
+def getPerpendicularVec( vec ):
+    vec = vec.normalized()
+    vec2 = LVector3f.unitY()
+
+    ang = vec.angleDeg( vec2 )
+    if ang < 0.1 or ang > 179.9:       # Parallel?
+        # Choose a different vector:
+        vec2 = LVector3f.unitX()
+
+    return vec.cross(vec2).normalized()
+
+
+# Macro-like function used to reduce the amount to code needed to create the
+# on screen instructions. Shamelessly stolen from the Panda3D samples.
+def label( text, line ):
+    lbl = OnscreenText( text=text,
+            parent=base.a2dTopLeft,
+            scale=.05,
+            pos=(0.06, -.06 * line - 0.03),
+            fg=(1, 1, 1, 1),
+            align=TextNode.ALeft)
+
+    return lbl
+
 

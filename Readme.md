@@ -8,83 +8,109 @@ Features:
 ---------
 - Hinge joints
 - Ball joints
-- Uses Panda3D's Bone system, so should be relatively easy to use with an existing skeleton. See usage notes below.
+- Uses Panda3D's Bone system and can be added to an existing, rigged mesh. See usage hints below.
 - Pure python, no dependencies beyond Panda3D
 
 Not implemented:
 ----------------
-- Other constraints
 - Target rotation (only target position is currently taken into account)
+- There is currently no way to control the "roll" of a ball joint
 
 Samples:
 ---------------
-In all samples, use WASD to move and middle mouse button to rotate.
 
 ### Reacher Sample: ###
+
+![](IK-2021-03-08_22.14.25.gif)
 
 The Reacher sample shows how to set up a simple IK chain with constraints which reaches for a moving target point:
 
 ```
-python3 ReacherSample.py
+python3 Samples/ReacherSample.py
 ```
-
-![](IK-2021-03-08_22.14.25.gif)
 
 ### Biped Sample: ###
 
-The Biped sample shows a very basic humanoid, where the legs are placed by IK. The basic character setup is: The root is a "torso" node. To this, a hip node is rigidly attached. There are two legs, each is its own IKChain. To let the character walk, the torso node is moved, and everything else moves with it.
+![](Biped.gif)
+
+The Biped sample shows a very basic two-legged walking, where the legs are placed by IK. The basic character setup is: The root is a "torso" node. To this, a hip node is rigidly attached. There are two legs, each is its own IKChain. To let the character walk, the torso node is moved, and everything else moves with it.
 While the torso moves, the legs have target points on the ground. The IK makes sure that they stay attached to these points, even when the torso moves. Periodically, the legs are moved to a new target to take a step. This new target point is always a point projected onto the floor in front of the body. How often a step is taken and how far infront of the character the new target position is depends on the movement speed of the character.
 
 ```
-python3 BipedSample.py
+python3 Samples/BipedSample.py
 ```
 
-Press + and - to speed the character up or slow it down. Note that this is very simplified - the step length should likely be increased for higher speeds.
-
-![](Biped-2021-03-13_22.23.21.gif)
+Press + and - to speed the character up or slow it down. Note that this is very simplified - in a real example, the time the legs are in the air should increase when running, i.e. the gait should change.
 
 ### Tentacle Sample: ###
 
-This sample shows how to set up a Bone chain from an existing mesh. Note that all bones are attached to their parent, each bone has a corresponding vertex group which it controls and all bones point down the Y axis, so their constraints will be set up to rotate over their X or Z axes.
+Shows how the 
 
-```
-python3 TentacleSample.py
-```
+You can switch between ball joints and hinge joints. Note that when using ball joints, the 
 
-
-
-Usage notes:
+Setup Notes:
 ------------
 
-The best way to learn is probably to look at the samples. However, here are also rough step-by-step instructions of how to set up and use an IKChain:
+There are two ways of setting up a chain - either manually or from an existing rigged model. There are samples for both setups: The ReacherSample and the Biped sample use manual setup, the Tentacle and CharacterRigged samples are set up from a mesh.
 
-### Creating a chain from code ###
-- Create a new IKChain, then create bones by calling "addBone", then call "finalize" before using the chain.
+### Setting up manually:
+The manual case could be used if you want to attach rigid bodies to the segments of an IK chain at runtime. In this mode, you need to set up the Character, add joints to it, add the actor, and then take over control of the joints before you can create the IK chain. Note that most of this is abstracted away by the ArmatureUtils class, although this could also be replaced by your own code. The following steps assume that you use the ArmatureUtils:
 
-- The "offset" parameter is a vector which describes the difference between the new bone's position and that of its parent.
-- The "rotAxis" can either be a (unit) vector, or "None". In the latter case, the constraint acts like that of a ball joint (or maybe more like two perpendicular hinge joints). In the former case, the rotAxis is the axis of the hinge joint. **Note that I only tested axis which are perpendicular to the "offset" vector, more specifically I usually use unitX or unitY.**
-- After adding all bones, you must call "IKChain.finalize()".
+- Create an ArmatureUtils instance
+- Add all joints to it using the "createJoint" function. Here, you can pass a rotation and/or translation to the joint. This is the base rotation and offset that the joint will have. To make your life simple, it's recommended to _not_ use a rotation here, but you can if you want to.
+- Call ArmatureUtils.finalize(). This sets up the Actor for you (which you can retrieve via ArmatureUtils.getActor()) as well as the controlNodes (which you can get via ArmatureUtils.getControlNode()).
+- Now you can set up an IKChain. Create an instance, and then add the joints you created to the IKChain using addJoint. Here, for every joint, you can retrieve the controlNode via ArmatureUtils.getControlNode() ).
+- At this point, if you want to, you can add constraints to the bones (see below).
+- Make sure to reparent the actor which you can retrieve from ArmatureUtils.getActor() to a NodePath in your scene - otherwise nothing will show up!
 
-### Creating a chain from a rigged mesh ###
-Instead of creating an IKChain manually, you can also use a predefined armature that comes with a rigged mesh. Usually, a chain will be set up for a certain subset of the bones (for example one chain for all the bones in the left arm and one for all of those in the right arm), so you need to specify which bones should be controlled by the IK algorithm (see also the TentacleSample.py):
+### Setting up from an existing mesh:
 
-- First load the model using `model = loader.loadModel("RiggedCharacter.bam")`
-- Then find the already existing character using `characterNodePath = model.find("-Character")`
-- Create an actor (required for access to the predefined joints): `actor = Actor(characterNodePath)`
-- Next we need a list of joints which the IK algorithm should control, along with their constraints. Create an empty list. Then add entries which are dictionaries. Each holds four entries: the "name" (string) of the joint to be used, the "axis" (None, "auto" or LVector3f, see below) to be used for rotation and the "minAng" (float) and "maxAng" (float) constraints.
-- The "axis" of each joint can be None (ball joint), "auto" (algorithm tries to determine the axis automatically - only works if the bone is rotated with respect to its parent!) or LVector3f (for instance LVector3f.unitZ() )
-- Figure out which node you want to act as the root of the chain. This can be any node in the scene graph, or it can be the parent bone of the first bone in your chain (in this case, get access to it via `root = actor.exposeJoint(...)`, *Note: Untested!*)
-- Lastly, create the IKChain using the static method IKChain.fromArmature. There's no need to call "finalize", the fromArmature method does this for you.
+There is also a convenience class to handle most of the work for you when setting up IK chains for an already existing character. This mode could be used, for example, to control the arms and legs of a character (by creating four independent IKChains). The main purpose of the IKActor class is to enable you to control joints via IK _and_ via FK (forward kinematics, i.e. setting the angles of a bone manually). This allows you, for example, to control the arms by playing an animation or setting the joint angles manually, while at the same time letting the IK solver control the legs.
 
-Hints:
-- When exporting from blender, make sure there is a vertex group for every bone - even if it's empty (i.e. if you have a bone called "Bone.002" there must be a vertex group called "Bone.002"). Otherwise, the bone gets positioned at the model root by Panda3D, and offsets are no longer correct. Hint: in blender, these vertex groups are set up automatically when parenting an armature to the mesh and selecting the automatic weight assignment.
+- Load your model
+- Create an instance of IKActor and pass your model to its constructor
+- Reparent the IKActor to a node in your scene by calling IKActor.reparentTo(), otherwise you won't see anything
+- For each chain you want to create, add the names of the bones to a list. This assumes that the bones are added in order, i.e. a bone must always be added after its parent.
+- Create each chain by calls to IKActor.createIKChain() (passing the joint name lists)
+- If you wish, you can now set constraints on each joint.
+
+### Setting up constraints: ###
+
+By default, each bone uses a ball constraint which is limited to the range from -pi to pi. You can change the constraint by calling one of the following:
+
+```python
+IKChain.setStatic( jointName )
+# Will set the bone to static, i.e. the bone's local rotatin will never be changed by the IK solver.
+```
+```python
+IKChain.setHingeConstraint( jointName, axis, minAng, maxAng )
+# Axis should be normalized, minAng and maxAng should be in radians (and probably in the range from -pi to pi).
+```
+```python
+IKChain.setBallConstraint( jointName, minAng, maxAng )
+# minAng and maxAng should be in radians (and probably in the range from -pi to pi).
+```
+
+### Running IK: ###
+
+Independently of how you set up your chain, call IKChain.setTarget (once) and IKChain.updateIK (every frame) to make the chain (try to) reach for a target.
+
+Setting up mesh with bones:
+---------------------------
+- When exporting from Blender, make sure there is a vertex group for every bone - even if it's empty (i.e. if you have a bone called "Bone.002" there must be a vertex group called "Bone.002"). Otherwise, the bone gets positioned at the model root by Panda3D, and offsets are no longer correct. Hint: in Blender, these vertex groups are set up automatically when parenting an armature to the mesh and selecting the automatic weight assignment.
 - Make sure every bone is connected to its predecessor.
+- Make sure the mesh itself has _no_ transformation applied. In Blender before exporting, select the mesh (not the armature!) go to Object Mode and select "Object->Clear->Location". Same goes for scale and rotation.
 
-### Solving IK ###
-Whether you created the chain from scratch or from a rigged model, you need to set the chain's target using `IKChain.setTarget( targetNode )`. After that, you should call `IKChain.updateIK()` once a frame, possibly while moving the root of the chain or the target.
-
-### General notes ###
-
+Further notes and hints:
+--------
 - CCD tends to rotate the last segments (the ones close to the end effector) much more than those close to the root, which can be undesirable. To avoid this, an annealing strategy should be implemented, which weighs the movement of bones depending on their distance to the root.
-- Ball joints (rotAxis=None) currently have no way of limiting a bone's "roll" angle. This means your bones may spin uncontrollably around their own axis. A workaround would be to replace a ball joint with two hinge joints (one rotating on LVector3f.unitX() and the other one on LVector3f.unitZ(), for example).
+- Ball joints (rotAxis=None) currently have no way of limiting a bone's "roll" angle. This means your bones may spin uncontrollably around their own axis.
+- When animating something like a leg, make sure target is usually reached, otherwise you loose control
+- In all my tests, a bone was never part of more than one chain. I don't know what happens if you try to control a bone via multiple chains - if you try it, let me know!
 
+License:
+---------------------------
+
+MIT License. See "LICENSE" file for details.
+
+Note: The samples use a rigged character mesh by Clint Bellanger (Thanks!), licened under CC0. The original source is: https://opengameart.org/content/very-low-poly-human

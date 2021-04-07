@@ -1,7 +1,10 @@
 from panda3d.core import *
+import sys,os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from IKChain import IKChain
 from Utils import *
 from WalkCycle import WalkCycle
+from ArmatureUtils import ArmatureUtils
 
 class Biped():
 
@@ -30,103 +33,86 @@ class Biped():
         self.newRandomTarget()
 
         ##################################
-        # Set up right leg:
+        # Set up Armature and Joints:
+        au = ArmatureUtils()
+            
+        joint = None
+        offsetLength = 0.5
+        rootJoint = au.createJoint( "root" )
 
+        ###############
+        # Left leg:
+        hipL = au.createJoint( "hipL", parentJoint=rootJoint )
+        
         # First, rotate 90 degrees outwards:
-        legRootLeft = hipNode.attachNewNode( "LegRootLeft" )
-        legRootLeft.setHpr( 90, 0, 0 )
+        upperLegL = au.createJoint( "upperLegL", parentJoint=hipL,
+                translate=-LVector3f.unitX()*0.13, rotAxis=LVector3f.unitY(), rotAngRad=math.pi*0.5 )
 
-        self.ikChainLegLeft = IKChain( legRootLeft )
+        lowerLegL = au.createJoint( "lowerLegL", parentJoint=upperLegL,
+                translate=LVector3f.unitY()*0.45 )
 
-        # Hip:
-        bone = self.ikChainLegLeft.addBone( offset=LVector3f.zero(),
-                minAng = -math.pi*0.2,
-                maxAng = math.pi*0.2,
-                rotAxis = None
-                )
+        footL = au.createJoint( "footL", parentJoint=lowerLegL,
+                translate=LVector3f.unitY()*0.6 )
 
-        # We want a fixed 90° angle between the hip node and the thigh, so
-        # rotate down:
-        bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.13,
-                minAng = -math.pi*0.5,
-                maxAng = -math.pi*0.5,
-                rotAxis = LVector3f.unitX(),
-                parentBone = bone
-                )
+        ###############
+        # Right leg:
+        hipR = au.createJoint( "hipR", parentJoint=rootJoint )
+        # First, rotate 90 degrees outwards:
+        upperLegR = au.createJoint( "upperLegR", parentJoint=hipR,
+                translate=LVector3f.unitX()*0.13, rotAxis=LVector3f.unitY(), rotAngRad=math.pi*0.5 )
 
-        # Thigh:
-        bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.45,
-                minAng = 0,
-                maxAng = math.pi*0.7,
-                rotAxis = LVector3f.unitZ(),
-                parentBone = bone
-                )
-        
-        # Shin:
-        bone = self.ikChainLegLeft.addBone( offset=LVector3f.unitY()*0.55,
-                minAng = -math.pi*0.6,
-                maxAng = 0,
-                rotAxis = None,
-                parentBone = bone
-                )
+        lowerLegR = au.createJoint( "lowerLegR", parentJoint=upperLegR,
+                translate=LVector3f.unitY()*0.45 )
 
+        footR = au.createJoint( "footR", parentJoint=lowerLegR,
+                translate=LVector3f.unitY()*0.6 )
 
-        # Required!
-        self.ikChainLegLeft.finalize()
+        ## IMPORTANT! Let the ArmatureUtils create the actor and set up control nodes:
+        au.finalize()
 
-        self.ikChainLegLeft.debugDisplay()
-        
+        ## IMPORTANT! Attach the created actor to the scene, otherwise you won't see anything!
+        au.getActor().reparentTo( hipNode )
 
         ##################################
-        # Set up right leg:
+        # Set up left IK Chain:
 
-        # First, rotate 90 degrees outwards:
-        legRootRight = hipNode.attachNewNode( "LegRootRight" )
-        legRootRight.setHpr( -90, 0, 0 )
+        self.ikChainLegLeft = IKChain( au.getActor() )
 
-        self.ikChainLegRight = IKChain( legRootRight )
+        bone = self.ikChainLegLeft.addJoint( hipL, au.getControlNode( hipL.getName() ) )
+        bone = self.ikChainLegLeft.addJoint( upperLegL, au.getControlNode( upperLegL.getName() ),
+                parentBone=bone )
+        bone = self.ikChainLegLeft.addJoint( lowerLegL, au.getControlNode( lowerLegL.getName() ),
+                parentBone=bone )
+        bone = self.ikChainLegLeft.addJoint( footL, au.getControlNode( footL.getName() ),
+                parentBone=bone )
 
-        # Hip:
-        bone = self.ikChainLegRight.addBone( offset=LVector3f.zero(),
-                minAng = -math.pi*0.2,
-                maxAng = math.pi*0.2,
-                rotAxis = None
-                )
+        self.ikChainLegLeft.setStatic( hipL.getName() )
+        self.ikChainLegLeft.setHingeConstraint( lowerLegL.getName(),
+                LVector3f.unitZ(), minAng=0, maxAng=math.pi*0.5 )
 
-        # We want a fixed 90° angle between the hip node and the thigh, so
-        # rotate down:
-        bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.13,
-                minAng = -math.pi*0.5,
-                maxAng = -math.pi*0.5,
-                rotAxis = LVector3f.unitX(),
-                parentBone = bone
-                )
+        self.ikChainLegLeft.debugDisplay()
 
-        # Thigh:
-        bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.45,
-                minAng = -math.pi*0.7,
-                maxAng = 0,
-                rotAxis = LVector3f.unitZ(),
-                parentBone = bone
-                )
-        
-        # Shin:
-        bone = self.ikChainLegRight.addBone( offset=LVector3f.unitY()*0.55,
-                minAng = 0,
-                maxAng = math.pi*0.6,
-                rotAxis = None,
-                parentBone = bone
-                )
+        ##################################
+        # Set up right IK Chain:
 
+        self.ikChainLegRight = IKChain( au.getActor() )
 
-        # Required!
-        self.ikChainLegRight.finalize()
+        bone = self.ikChainLegRight.addJoint( hipR, au.getControlNode( hipR.getName() ) )
+        bone = self.ikChainLegRight.addJoint( upperLegR, au.getControlNode( upperLegR.getName() ),
+                parentBone=bone )
+        bone = self.ikChainLegRight.addJoint( lowerLegR, au.getControlNode( lowerLegR.getName() ),
+                parentBone=bone )
+        bone = self.ikChainLegRight.addJoint( footR, au.getControlNode( footR.getName() ),
+                parentBone=bone )
+
+        self.ikChainLegRight.setStatic( hipR.getName() )
+        self.ikChainLegRight.setHingeConstraint( lowerLegR.getName(),
+                LVector3f.unitZ(), minAng=0, maxAng=math.pi*0.5 )
 
         self.ikChainLegRight.debugDisplay()
 
-
-        self.ikChainLegLeft.updateIK()
-        self.ikChainLegRight.updateIK()
+        #self.ikChainLegLeft.updateIK()
+        #self.ikChainLegRight.updateIK()
 
         #################################################
         # Foot targets:
@@ -159,10 +145,17 @@ class Biped():
         self.walkCycle = WalkCycle( 2, 0.75 )
 
         #################################################
+        ## Set up controls and labels:
 
         base.taskMgr.add( self.walk, "BipedWalk")
         base.accept( "+", self.speedUp )
         base.accept( "-", self.slowDown )
+
+        label("[WASD]: Move Camera", 1)
+        label("[Mouse Wheel]: Zoom Camera", 2)
+        label("[Middle Mouse]: Rotate Camera", 3)
+        label("[+]: Speed up", 5)
+        label("[-]: Slow down", 6)
 
     def speedUp( self ):
         self.walkSpeed += 0.5
@@ -305,19 +298,13 @@ if __name__ == "__main__":
             #####################################
             # Set up Camera and input:
 
-            focusNode = render.attachNewNode( "CameraFocusNode" )
-            self.camControl = CameraControl( camera, self.mouseWatcherNode )
+            self.camControl = CameraControl( camera, self.mouseWatcherNode, speed=0.02 )
+            #self.camControl.attachTo( self.biped.torsoNode )
             
             self.taskMgr.add( self.camControl.moveCamera, "MoveCameraTask")
 
             self.accept( "wheel_down", self.camControl.wheelDown )
             self.accept( "wheel_up", self.camControl.wheelUp )
-
-            self.accept( "z", self.toggleAnimation )
-            self.animateTarget = True
-
-        def toggleAnimation( self ):
-            self.animateTarget = (self.animateTarget == False)
 
 
     app = MyApp()
