@@ -1,5 +1,6 @@
 from panda3d.core import *
 from direct.actor.Actor import Actor
+import math
 
 class ArmatureUtils():
 
@@ -27,7 +28,7 @@ class ArmatureUtils():
             raise sys.Exception( "Only either rotMat or rotAxis can be used, not both!" )
 
         if rotAxis:
-            rotMat = Mat4.rotateMat( minAng/math.pi*180, rotAxis )
+            rotMat = Mat4.rotateMat( rotAngRad/math.pi*180, rotAxis )
 
         if not rotMat:
             rotMat = Mat4.identMat()
