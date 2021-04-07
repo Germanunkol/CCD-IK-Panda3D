@@ -139,6 +139,15 @@ class IKChain():
         if self.debugDisplayEnabled:
             self.debugDisplay()
 
+    def setBallConstraint( self, jointName, minAng=-math.pi, maxAng=math.pi ):
+        b = self.getBone( jointName )
+        b.axis = None
+        b.minAng = minAng
+        b.maxAng = maxAng
+
+        if self.debugDisplayEnabled:
+            self.debugDisplay()
+
     #def finalize( self ):
 
     #    # Create an actor so we can expose and control nodes:
