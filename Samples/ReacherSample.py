@@ -1,4 +1,7 @@
+import sys,os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from IKChain import IKChain
+from ArmatureUtils import ArmatureUtils
 from Utils import *
 
 if __name__ == "__main__":
@@ -26,26 +29,45 @@ if __name__ == "__main__":
 
             root = render.attachNewNode("Root")
             root.setPos( 1, 1, 1 )
-            #
-            self.ikChain = IKChain( root )
 
-            bone = self.ikChain.addBone( offset=LVector3f.zero(),
-                    minAng = -math.pi*0.3,
-                    maxAng = math.pi*0.3,
-                    rotAxis = LVector3f.unitX()
-                    )
-
+            #######################################
+            ## Set up the joints using an ArmatureUtils instance:
+            au = ArmatureUtils()
+            
+            joint = None
             for i in range( 6 ):
-                bone = self.ikChain.addBone( offset=LVector3f.unitY(),
-                        minAng = -math.pi*0.3,
-                        maxAng = math.pi*0.3,
-                        rotAxis = LVector3f.unitZ(),
-                        parentBone = bone
+                offsetLength = 0.5
+                if i == 0:
+                    offsetLength = 0.1
+                joint = au.createJoint( f"joint{i}",
+                        parentJoint = joint, translate=LVector3f.unitX()*offsetLength,
                         )
 
-            self.ikChain.finalize()
+            au.finalize()
+
+            #######################################
+            ## Create an IK chain from the armature:
+
+            self.ikChain = IKChain( au.getActor() )
+
+            bone = None
+            for i in range( 6 ):
+                name = f"joint{i}"
+                # Now we can conveniently retrieve everything we need from the ArmatureUtils...
+                joint = au.getJoint( name )
+                controlNode = au.getControlNode( name )
+                # ... and add it to the chain:
+                bone = self.ikChain.addJoint( joint, controlNode, parentBone=bone )
+                if i < 4:
+                    self.ikChain.setHingeConstraint( name, LVector3f.unitZ(),
+                            minAng=-math.pi*0.25, maxAng=math.pi*0.25 )
+                else:
+                    self.ikChain.setHingeConstraint( name, LVector3f.unitY(),
+                            minAng=-math.pi*0.25, maxAng=math.pi*0.25 )
 
             self.ikChain.debugDisplay()
+
+            au.getActor().reparentTo( render )
 
             #factory.debugInfo( render )
             focusNode = render.attachNewNode( "CameraFocusNode" )
