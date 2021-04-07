@@ -4,15 +4,7 @@ from IKChain import IKChain
 from IKActor import IKActor
 from Utils import *
 from direct.actor.Actor import Actor
-from direct.gui.OnscreenText import OnscreenText
 from panda3d.core import *
-
-# Macro-like function used to reduce the amount to code needed to create the
-# on screen instructions. Shamelessly stolen from the Panda3D samples.
-def genLabelText(text, i):
-    return OnscreenText(text=text, parent=base.a2dTopLeft, scale=.06,
-                        pos=(0.06, -.08 * i), fg=(1, 1, 1, 1),
-                        shadow=(0, 0, 0, .5), align=TextNode.ALeft)
 
 if __name__ == "__main__":
 
@@ -136,13 +128,14 @@ if __name__ == "__main__":
             self.accept( "1", self.setHingeConstraints )
             self.accept( "2", self.setBallConstraints )
         
-            self.onekeyText = genLabelText("[WASD]: Move Camera", 1)
-            self.onekeyText = genLabelText("[Mouse Wheel]: Zoom Camera", 2)
-            self.onekeyText = genLabelText("[p]: Pause Animation", 3)
-            self.onekeyText = genLabelText("[j]: Move Root Up", 4)
-            self.onekeyText = genLabelText("[k]: Move Root Down", 5)
-            self.onekeyText = genLabelText("[1]: Use Hinge Constraints", 6)
-            self.onekeyText = genLabelText("[2]: Use Ball Constraints", 7)
+            label("[WASD]: Move Camera", 1)
+            label("[Mouse Wheel]: Zoom Camera", 2)
+            label("[Middle Mouse]: Rotate Camera", 3)
+            label("[P]: Pause Animation", 5)
+            label("[J]: Move Root Up", 6)
+            label("[K]: Move Root Down", 7)
+            label("[1]: Use Hinge Constraints", 8)
+            label("[2]: Use Ball Constraints", 9)
 
             print("---------------------------------")
             print("Full tree:")
