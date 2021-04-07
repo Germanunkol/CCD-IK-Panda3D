@@ -1,4 +1,7 @@
+import sys,os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from IKChain import IKChain
+from IKActor import IKActor
 from Utils import *
 from direct.actor.Actor import Actor
 from panda3d.core import *
@@ -58,28 +61,18 @@ if __name__ == "__main__":
             m.setBaseColor((1, 0.8, 0.3, 1))
             self.model.setMaterial(m)
             
-            characterNode = self.model.find("-Character")
-            actor = Actor(characterNode)#, {'simplechar' : anim})
-            actor.reparentTo( self.root )
+            self.ikActor = IKActor( self.model )
+            self.ikActor.reparentTo( self.root )
+            self.ikActor.actor.setMaterial(m)
 
-            jointList = []
-            jointList.append( {"name":"Bone", "axis":LVector3f.unitX(),
-                "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
+            jointNames = []
+            jointNames.append( "Bone" )
             for i in range(1,8):
-                #jointList.append( {"name":"Bone.{:03d}".format(i), "axis":None,
-                #    "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
-                if i % 2 == 0:
-                    jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitX(),
-                        "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
-                else:
-                    jointList.append( {"name":"Bone.{:03d}".format(i), "axis":LVector3f.unitZ(),
-                        "minAng":-math.pi*0.3, "maxAng":math.pi*0.3} )
-             
+                jointNames.append( f"Bone.{i:03d}" )
 
-            self.ikChain = IKChain.fromArmature( characterNode.node(), self.root, actor, jointList )
+            self.ikChain = self.ikActor.createIKChain( jointNames )
 
             print("chain:")
-            self.ikChain.parent.ls()
             self.ikChain.debugDisplay( lineLength=0.5 )
 
             #factory.debugInfo( render )
