@@ -81,7 +81,7 @@ class IKActor():
             assert jointName in self.joints.keys(), "Joint '" + jointName + "' cannot be added to chain - not found!" 
             joint = self.joints[jointName]
             controlNode = self.getControlNode( jointName )
-            newBone = chain.addBone( joint, controlNode, parentBone=parentBone )
+            newBone = chain.addJoint( joint, controlNode, parentBone=parentBone )
             parentBone = newBone
 
         #chain.debugDisplay()
