@@ -97,7 +97,6 @@ class IKChain():
         chain.finalize()
         return chain
 
-    #def addBone( self, offset=None, rotAxis=None, minAng=0, maxAng=0, parentBone=None, joint=None, static=False ):
     def addBone( self, joint, controlNode, parentBone=None, static=False ):
 
         if parentBone:
@@ -108,12 +107,6 @@ class IKChain():
         name = joint.getName()
 
         bone = Bone( joint, parent=parentBone, static=static )
-
-        #ikNode = parentIKNode.attachNewNode( name )
-        # Same local pos as the exposed joints:
-        #ikNode.setPos( controlNode.getPos() )
-
-        #bone.ikNode = ikNode
         bone.controlNode = controlNode
 
         self.bones.append(bone)
@@ -148,30 +141,6 @@ class IKChain():
         if self.debugDisplayEnabled:
             self.debugDisplay()
 
-    #def finalize( self ):
-
-    #    # Create an actor so we can expose and control nodes:
-    #    # Note: If the model was loaded from a file, the actor already exists
-
-    #    # Root of the chain
-    #    parentIKNode = self.actor
-
-    #    # For each bone, create:
-    #    # - a control node which will be used to update the bone position after IK solving
-    #    # - an exposed node which we can attach things to, to render them
-    #    # - a normal NodePath node called ikNode, which we'll use during IK solving
-    #    for bone in self.bones:
-    #        name = bone.joint.getName()
-    #        # Separate nodes for IK:
-    #        ikNode = parentIKNode.attachNewNode( name )
-    #        # Same local pos as the exposed joints:
-    #        ikNode.setPos( controlNode.getPos() )
-    #        bone.ikNode = ikNode
-    #        parentIKNode = ikNode
-
-    #    self.endEffector = self.bones[-1].ikNode.attachNewNode( "EndEffector" )
-    #    #self.endEffector.setPos( self.bones[-1].offset )
-
     def updateIK( self, threshold = 1e-2, minIterations=1, maxIterations=10 ):
 
         # Solve the IK chain for the IK nodes:
@@ -182,7 +151,6 @@ class IKChain():
         # This will end up affecting the actual mesh.
         for bone in self.bones:
             bone.controlNode.setQuat( bone.controlNode.getQuat() )
-
 
     def inverseKinematicsCCD( self, threshold = 1e-2, minIterations=1, maxIterations=10 ):
 

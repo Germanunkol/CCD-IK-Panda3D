@@ -4,7 +4,15 @@ from IKChain import IKChain
 from IKActor import IKActor
 from Utils import *
 from direct.actor.Actor import Actor
+from direct.gui.OnscreenText import OnscreenText
 from panda3d.core import *
+
+# Macro-like function used to reduce the amount to code needed to create the
+# on screen instructions. Shamelessly stolen from the Panda3D samples.
+def genLabelText(text, i):
+    return OnscreenText(text=text, parent=base.a2dTopLeft, scale=.06,
+                        pos=(0.06, -.08 * i), fg=(1, 1, 1, 1),
+                        shadow=(0, 0, 0, .5), align=TextNode.ALeft)
 
 if __name__ == "__main__":
 
@@ -14,6 +22,10 @@ if __name__ == "__main__":
     class MyApp(ShowBase):
 
         def __init__(self):
+
+            ###########################################
+            ## Basic window setup:
+
             ShowBase.__init__(self)
             base.disableMouse()
             base.setFrameRateMeter(True)
@@ -24,11 +36,13 @@ if __name__ == "__main__":
 
             base.setBackgroundColor(0,0,0)
 
+            ###########################################
+            ## Visualize grid:
+
             grid = createGrid( 20, 1 )
             render.attachNewNode( grid )
             axes = createAxes( 1000, bothways=True, thickness=3 )
             render.attachNewNode( axes )
-
 
             ###########################################
             ## Set up lights:
@@ -50,21 +64,21 @@ if __name__ == "__main__":
             ############################################
             ## Set up model:
 
+            self.model = loader.loadModel( "Meshes/Tentacle.bam" )
+
             self.root = render.attachNewNode("Root")
             self.root.setPos( 0, 0, 2 )
 
-            self.model = loader.loadModel( "Meshes/Tentacle.bam" )
-            #self.model.reparentTo(root)
-            #self.model.ls()
+            ############################################
+            ## Create an IKActor which will generate control nodes for each bone:
 
-            m = Material()
-            m.setBaseColor((1, 0.8, 0.3, 1))
-            self.model.setMaterial(m)
-            
             self.ikActor = IKActor( self.model )
             self.ikActor.reparentTo( self.root )
-            self.ikActor.actor.setMaterial(m)
 
+            ############################################
+            ## Set up an IK Chain by passing the bone names which should be part of the chain
+            ## to the IKActor:
+    
             jointNames = []
             jointNames.append( "Bone" )
             for i in range(1,8):
@@ -72,38 +86,59 @@ if __name__ == "__main__":
 
             self.ikChain = self.ikActor.createIKChain( jointNames )
 
-            print("chain:")
+            # Set constraints:
+            self.ikChain.setBallConstraint( "Bone", minAng=-math.pi*0.9, maxAng=math.pi*0.9 )
+            for i in range(1,8):
+                # Set X-axis constraint for bones with even index
+                if i % 2 == 0:
+                    self.ikChain.setHingeConstraint( f"Bone.{i:03d}", LVector3f.unitX(),
+                            minAng=-math.pi*0.6, maxAng=math.pi*0.6 )
+                # Set Z-axis constraint for the others:
+                else:
+                    self.ikChain.setHingeConstraint( f"Bone.{i:03d}", LVector3f.unitZ(),
+                            minAng=-math.pi*0.6, maxAng=math.pi*0.6 )
+
+
+            # Visualize the joints:
             self.ikChain.debugDisplay( lineLength=0.5 )
 
-            #factory.debugInfo( render )
+            ##################################
+            ## Target point:
+
+            point = createPoint( thickness=10 )
+            self.ikTarget = render.attachNewNode( point )
+            
+            self.taskMgr.add( self.moveTarget, "MoveTarget" )
+
+            self.ikChain.setTarget( self.ikTarget )
+
+
+            ############################################
+            ## Set up camera:
             focusNode = render.attachNewNode( "CameraFocusNode" )
             self.camControl = CameraControl( camera, self.mouseWatcherNode )
             
             self.taskMgr.add( self.camControl.moveCamera, "MoveCameraTask")
 
+            ############################################
+            ## Set up controls:
+
             self.accept( "wheel_down", self.camControl.wheelDown )
             self.accept( "wheel_up", self.camControl.wheelUp )
 
             self.animateTarget = True
-            self.accept( "z", self.toggleAnimation )
+            self.animationTime = 0
+            self.accept( "p", self.toggleAnimation )
             self.accept( "j-repeat", self.moveRootDown )
             self.accept( "k-repeat", self.moveRootUp )
-
-            ##################################
-            ## Target point:
-            col = (random.random(), random.random(), random.random())
-
-            lines = LineSegs()
-            lines.setThickness(15)
-            lines.setColor( col[0], col[1], col[2] )
-            lines.moveTo(0, 0, 0)
-            #lines.drawTo(np.getPos(parentNode))
-            #point = render.attachNewNode("Point")
-            self.ikTarget = render.attachNewNode(lines.create())
-            
-            self.taskMgr.add( self.moveTarget, "MoveTarget" )
-
-            self.ikChain.setTarget( self.ikTarget )
+            self.accept( "j", self.moveRootDown )
+            self.accept( "k", self.moveRootUp )
+        
+            self.onekeyText = genLabelText("[WASD]: Move Camera", 1)
+            self.onekeyText = genLabelText("[Mouse Wheel]: Zoom Camera", 2)
+            self.onekeyText = genLabelText("[p]: Pause Animation", 3)
+            self.onekeyText = genLabelText("[j]: Move Root Up", 4)
+            self.onekeyText = genLabelText("[k]: Move Root Down", 5)
 
             print("---------------------------------")
             print("Full tree:")
@@ -113,9 +148,11 @@ if __name__ == "__main__":
         def moveTarget( self, task ):
             if self.animateTarget:
                 speed = 0.4
-                self.ikTarget.setPos( 2.5*math.sin(speed*task.time),
-                        13*math.sin(speed*task.time*1.6+2),
-                        math.cos(speed*task.time*1.6+2) )
+                self.ikTarget.setPos( 2.5*math.sin(speed*self.animationTime),
+                        13*math.sin(speed*self.animationTime*1.6+2),
+                        math.cos(speed*self.animationTime*1.6+2) )
+
+                self.animationTime += globalClock.getDt()
 
             self.ikChain.updateIK()
             return task.cont
@@ -126,9 +163,8 @@ if __name__ == "__main__":
         def moveRootDown( self ):
             self.root.setPos( self.root.getPos() - LVector3f.unitZ()*globalClock.getDt()*3 )
 
-
         def toggleAnimation( self ):
-            self.animate = (self.animateTarget == False)
+            self.animateTarget = (self.animateTarget == False)
 
 
     app = MyApp()
