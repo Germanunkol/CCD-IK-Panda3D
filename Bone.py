@@ -7,8 +7,8 @@ class Bone():
     def __init__( self, joint, parent=None, static=False ):
 
         self.axis = None
-        self.minAng = -math.pi*0.5
-        self.maxAng = math.pi*0.5
+        self.minAng = -math.pi
+        self.maxAng = math.pi
         self.joint = joint
         self.parent = parent
         self.static = static
