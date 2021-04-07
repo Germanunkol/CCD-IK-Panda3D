@@ -44,9 +44,28 @@ Press + and - to speed the character up or slow it down. Note that this is very 
 
 ### Tentacle Sample: ###
 
-Shows how the 
+Shows how a chain can be set up from a existing mesh with bones.
 
-You can switch between ball joints and hinge joints. Note that when using ball joints, the 
+You can switch between ball joints and hinge joints. Note that when using ball joints, the mesh will sometimes get squished together - this happens when a bone rolls (for which there is currently no control in this library).
+To avoid this effect, use only hinge joints. Two hinge joints with an offset of zero between them should have a similar effect as a ball joint.
+
+```
+python3 Samples/TentacleSample.py
+```
+
+### Character Sample: ###
+
+Shows a walking humanoid. Similar to the Biped Sample, but this one uses a mesh, slightly more complicated walking method and can walk up and down slopes.
+
+This is meant as a simple demonstration - there is a lot that can be improved here. Things that could be added:
+- Different gait when walking faster
+- Different gait when rotating
+- Slow down when moving up/down slopes
+- The torso is currently always kept a fixed height from the average of the feet positions. This is probably too simple - instead, it could also depend on which foot is grounded and on whether the character is moving up or down.
+
+```
+python3 Samples/CharacterSample.py
+```
 
 Setup Notes:
 ------------
@@ -66,6 +85,7 @@ The manual case could be used if you want to attach rigid bodies to the segments
 ### Setting up from an existing mesh:
 
 There is also a convenience class to handle most of the work for you when setting up IK chains for an already existing character. This mode could be used, for example, to control the arms and legs of a character (by creating four independent IKChains). The main purpose of the IKActor class is to enable you to control joints via IK _and_ via FK (forward kinematics, i.e. setting the angles of a bone manually). This allows you, for example, to control the arms by playing an animation or setting the joint angles manually, while at the same time letting the IK solver control the legs.
+(Note: For this to work, the armature of your mesh must be set up correctly. See hints below!)
 
 - Load your model
 - Create an instance of IKActor and pass your model to its constructor
