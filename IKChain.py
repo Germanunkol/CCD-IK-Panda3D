@@ -7,7 +7,7 @@ from VecUtils import *
 
 class IKChain():
 
-    def __init__( self, actor=None ):
+    def __init__( self, actor ):
 
         # We need an actor to be able to control (and expose) joints. If it already exists,
         # likely because the model was loaded from a file - great then just use that.
@@ -23,81 +23,8 @@ class IKChain():
 
         self.endEffector = None
 
-    def fromArmature( character, parent, actor, jointList ):
 
-        chain = IKChain( parent, char=character, actor=actor )
-
-        bone = None
-        #parentJoint = chain.skeleton
-        jointNames = [j["name"] for j in jointList]
-        for j in jointList:
-
-            # Get the name of the current bone:
-            jointName = j["name"]
-
-            # Get the type of constraint
-            axis = "auto"
-            if "axis" in j.keys():
-                axis = j["axis"]
-            # Get the constraint values:
-            minAng = -math.pi
-            if "minAng" in j.keys():
-                minAng = j["minAng"]
-            maxAng = -math.pi
-            if "maxAng" in j.keys():
-                maxAng = j["maxAng"]
-
-            joint = character.findJoint( jointName )
-            if not joint:
-                raise Exception("Could not find joint with name " + jointName + " in character!")
-       
-            # Retrieve the transform of the joint. We'll treat this as the "base" pose of the
-            # transform and store it for later use.
-            mat = joint.getTransform()
-
-            # Get the translation:
-            t = mat.getRow3(3)
-
-            static = False
-
-            # Set up rotation axis:
-            if axis == None:    # No axis, i.e. the constraint should be a ball joint:
-                pass
-            elif axis == "static":
-                static=True
-                axis=None
-
-            elif isinstance( axis, LVector3f ): # Axis was given, use it:
-                if axis.length() <  1e-9:
-                    raise Exception("Axis given for joint " + jointName + " has length zero")
-                axis = axis.normalized()
-
-
-            elif axis == "auto":# Ask the system to automatically determine rotation axis:
-
-                # Try to get the rotation from the joint transform:
-                rot = Quat()
-                rot.setFromMatrix( mat )
-                rot.normalize()
-                axis = rot.getAxisNormalized()
-                ang = rot.getAngleRad()
-
-                 # If the angle is zero, then this axis cannot be trusted. 
-                if abs(ang) < 1e-8:
-                    raise Exception("Cannot automatically determine rotation axis for joint " + jointName + " (its angle is zero)! Please specify a rotation axis manually, or set it to 'None'.")
-
-            else:
-                raise Exception("Axis or joint " + jointName + " invalid (must be None, 'auto', or a LVector3f)")
-
-            bone = chain.addBone( t, rotAxis=axis, minAng=minAng, maxAng=maxAng,
-                    parentBone=bone,
-                    joint=joint,
-                    static=static )
-
-        chain.finalize()
-        return chain
-
-    def addBone( self, joint, controlNode, parentBone=None, static=False ):
+    def addJoint( self, joint, controlNode, parentBone=None, static=False ):
 
         if parentBone:
             parentIKNode = parentBone.controlNode
@@ -108,6 +35,9 @@ class IKChain():
 
         bone = Bone( joint, parent=parentBone, static=static )
         bone.controlNode = controlNode
+
+        if parentBone:
+            controlNode.reparentTo( parentBone.controlNode )
 
         self.bones.append(bone)
 
@@ -142,6 +72,8 @@ class IKChain():
             self.debugDisplay()
 
     def updateIK( self, threshold = 1e-2, minIterations=1, maxIterations=10 ):
+
+        assert len(self.bones) > 0, "IKChain requires at least one bone for updateIK() to work!"
 
         # Solve the IK chain for the IK nodes:
         if self.target:
@@ -358,5 +290,4 @@ class IKChain():
         rootDebugNode = self.actor.find("DebugDisplay")
         if rootDebugNode:
             rootDebugNode.removeNode()
-
 
