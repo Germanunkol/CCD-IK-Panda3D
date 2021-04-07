@@ -45,6 +45,9 @@ if __name__ == "__main__":
 
             au.finalize()
 
+            ## IMPORTANT! Attach the created actor to the scene, otherwise you won't see anything!
+            au.getActor().reparentTo( render )
+
             #######################################
             ## Create an IK chain from the armature:
 
@@ -67,42 +70,46 @@ if __name__ == "__main__":
 
             self.ikChain.debugDisplay()
 
-            au.getActor().reparentTo( render )
 
-            #factory.debugInfo( render )
+            ############################################
+            ## Set up camera:
             focusNode = render.attachNewNode( "CameraFocusNode" )
             self.camControl = CameraControl( camera, self.mouseWatcherNode )
             
             self.taskMgr.add( self.camControl.moveCamera, "MoveCameraTask")
 
-            self.accept( "wheel_down", self.camControl.wheelDown )
-            self.accept( "wheel_up", self.camControl.wheelUp )
-
-            self.accept( "z", self.toggleAnimation )
-            self.animateTarget = True
-
             ##################################
             ## Target point:
-            col = (random.random(), random.random(), random.random())
 
-            lines = LineSegs()
-            lines.setThickness(15)
-            lines.setColor( col[0], col[1], col[2] )
-            lines.moveTo(0, 0, 0)
-            #lines.drawTo(np.getPos(parentNode))
-            #point = render.attachNewNode("Point")
-            self.ikTarget = render.attachNewNode(lines.create())
+            point = createPoint( thickness=10 )
+
+            self.ikTarget = render.attachNewNode( point )
             self.ikTarget.setPos( 2,0,2 )
             
             self.taskMgr.add( self.moveTarget, "MoveTarget" )
 
             self.ikChain.setTarget( self.ikTarget )
 
+            ############################################
+            ## Set up controls:
+
+            self.accept( "wheel_down", self.camControl.wheelDown )
+            self.accept( "wheel_up", self.camControl.wheelUp )
+
+            self.accept( "p", self.toggleAnimation )
+            self.animateTarget = True
+
+            label("[WASD]: Move Camera", 1)
+            label("[Mouse Wheel]: Zoom Camera", 2)
+            label("[Middle Mouse]: Rotate Camera", 3)
+            label("[P]: Pause Animation", 5)
+
         def moveTarget( self, task ):
             if self.animateTarget:
                 speed = 1
-                self.ikTarget.setPos( 2.5*math.sin(speed*task.time),
-                        5*math.sin(speed*task.time*1.6+2),
+                self.ikTarget.setPos(
+                        4*math.sin(speed*task.time*1.6+2),
+                        2.5*math.sin(speed*task.time),
                         math.cos(speed*task.time*1.6+2) )
 
             self.ikChain.updateIK()
