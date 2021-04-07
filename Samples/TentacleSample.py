@@ -133,12 +133,16 @@ if __name__ == "__main__":
             self.accept( "k-repeat", self.moveRootUp )
             self.accept( "j", self.moveRootDown )
             self.accept( "k", self.moveRootUp )
+            self.accept( "1", self.setHingeConstraints )
+            self.accept( "2", self.setBallConstraints )
         
             self.onekeyText = genLabelText("[WASD]: Move Camera", 1)
             self.onekeyText = genLabelText("[Mouse Wheel]: Zoom Camera", 2)
             self.onekeyText = genLabelText("[p]: Pause Animation", 3)
             self.onekeyText = genLabelText("[j]: Move Root Up", 4)
             self.onekeyText = genLabelText("[k]: Move Root Down", 5)
+            self.onekeyText = genLabelText("[1]: Use Hinge Constraints", 6)
+            self.onekeyText = genLabelText("[2]: Use Ball Constraints", 7)
 
             print("---------------------------------")
             print("Full tree:")
@@ -156,6 +160,35 @@ if __name__ == "__main__":
 
             self.ikChain.updateIK()
             return task.cont
+
+        def setHingeConstraints( self ):
+
+            # Set constraints:
+            self.ikChain.setHingeConstraint( "Bone", LVector3f.unitZ(),
+                    minAng=-math.pi*0.9, maxAng=math.pi*0.9 )
+            for i in range(1,8):
+                # Set X-axis constraint for bones with even index
+                if i % 2 == 0:
+                    self.ikChain.setHingeConstraint( f"Bone.{i:03d}", LVector3f.unitX(),
+                            minAng=-math.pi*0.6, maxAng=math.pi*0.6 )
+                # Set Z-axis constraint for the others:
+                else:
+                    self.ikChain.setHingeConstraint( f"Bone.{i:03d}", LVector3f.unitZ(),
+                            minAng=-math.pi*0.6, maxAng=math.pi*0.6 )
+
+            self.ikChain.debugDisplay( lineLength=0.5 )
+
+        def setBallConstraints( self ):
+
+            # Set constraints:
+            self.ikChain.setBallConstraint( "Bone",
+                    minAng=-math.pi*0.9, maxAng=math.pi*0.9 )
+            for i in range(1,8):
+                self.ikChain.setBallConstraint( f"Bone.{i:03d}",
+                        minAng=-math.pi*0.6, maxAng=math.pi*0.6 )
+
+            self.ikChain.debugDisplay( lineLength=0.5 )
+
 
         def moveRootUp( self ):
             self.root.setPos( self.root.getPos() + LVector3f.unitZ()*globalClock.getDt()*3 )
