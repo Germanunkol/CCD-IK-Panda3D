@@ -18,7 +18,6 @@ class FootArc():
         # foot as high as you normally would:
         stepDist = (startPos - endPos).length()
         self.stepHeight = maxStepHeight*min(stepDist/maxStepDist, 1)
-        print("step height", self.stepHeight)
 
     def update( self, amount ):
 

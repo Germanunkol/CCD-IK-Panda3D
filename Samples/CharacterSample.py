@@ -211,8 +211,6 @@ class RiggedChar():
         base.accept( "+", self.speedUp )
         base.accept( "-", self.slowDown )
 
-        base.accept( "p", self.printChain )
-
         ##################################
         # Set up collision:
         self.terrain = terrain
@@ -230,21 +228,17 @@ class RiggedChar():
         
         ##################################
         # Control upper body:
-        #self.torsoBone = self.ikActor.getControlNode( "Torso" )
         self.torsoBone = self.ikActor.getControlNode( "LowerSpine" )
-        #self.torsoBone.setHpr( 0, -2, 0 )
-
-        #self.rootBone = self.ikActor.getControlNode( "Hips" )
 
     def speedUp( self ):
-        self.walkSpeed += 0.25
-        self.walkSpeed = min(self.walkSpeed, 3)
+        self.walkSpeed += 0.1
+        self.walkSpeed = min(self.walkSpeed, 0.5)
         self.turnSpeed = self.walkSpeed*2
         self.heightAdjustmentSpeed = self.walkSpeed
         self.legMovementSpeed = 0.3 + self.walkSpeed*1.2
 
     def slowDown( self ):
-        self.walkSpeed -= 0.25
+        self.walkSpeed -= 0.1
         self.walkSpeed = max(self.walkSpeed, 0)
         self.turnSpeed = self.walkSpeed*2
         self.heightAdjustmentSpeed = self.walkSpeed
@@ -282,6 +276,7 @@ class RiggedChar():
             step = self.rootNode.getQuat().xform( step )
             self.rootNode.setPos( self.rootNode.getPos() + step )
 
+        #############################
         # Calculate how far we've walked this frame:
         curWalkDist = (prevPos - self.rootNode.getPos()).length()
 
@@ -291,7 +286,13 @@ class RiggedChar():
         update += angClamped*0.5
         self.walkCycle.updateTime( update )
 
-        curPos = self.rootNode.getPos()
+        #############################
+        # Rotate torso:
+        cycle = math.sin( self.walkCycle.cycleTime/self.walkCycle.cycleDuration*math.pi*2 )
+        self.torsoBone.setHpr( -4*cycle, -2, 0 )
+
+        #############################
+        # Move body up and down depending on foot placement:
 
         #if not self.stepArcLeft and self.stepArcRight:
         #    self.curTargetHeight = self.footTargetLeft.getPos().getZ()
@@ -307,14 +308,12 @@ class RiggedChar():
         self.curTargetHeight = 0.5*(footPosL.getZ() +\
                 footPosR.getZ()) + self.rootHeight - self.footHeightOffset.getZ()
 
+        curPos = self.rootNode.getPos()
         heightAdjustment = self.curTargetHeight - curPos.getZ()
         limit = self.heightAdjustmentSpeed * globalClock.getDt()
         heightAdjustment = min( max( heightAdjustment, -limit), limit )
         self.rootNode.setPos( curPos.getX(), curPos.getY(), curPos.getZ() + heightAdjustment )
 
-        # Rotate torso:
-        cycle = math.sin( self.walkCycle.cycleTime/self.walkCycle.cycleDuration*math.pi*2 )
-        self.torsoBone.setHpr( -4*cycle, -2, 0 )
 
         #############################
         # Update arms:
@@ -356,12 +355,8 @@ class RiggedChar():
             #h = min( curWalkSpeed*0.2, 0.3)
             h = 0.05
             targetPos = self.findGroundPos( self.plannedFootTargetLeft.getPos( self.rootNode ) )
-            print("targetPos", targetPos)
-            print( "footTargetPOs", self.footTargetLeft.getPos() )
-            print( "targetPos rel", render.getRelativePoint( self.rootNode, targetPos ) )
             self.stepArcLeft = FootArc( self.footTargetLeft.getPos() - self.footHeightOffset,
                     render.getRelativePoint( self.rootNode, targetPos ), maxStepHeight=h )
-            print( "curPos", self.stepArcLeft.getPos() )
 
         if self.walkCycle.stepRequired[1]:
             #self.footTargetRight.setPos( self.plannedFootTargetRight.getPos( render ) )
@@ -422,10 +417,6 @@ class RiggedChar():
                     0 ) )
 
 
-    def printChain( self ):
-        self.ikChainLegLeft.debhugPrint()
-
-
 if __name__ == "__main__":
 
     from direct.showbase.ShowBase import ShowBase
@@ -472,11 +463,13 @@ if __name__ == "__main__":
             self.accept( "wheel_down", self.camControl.wheelDown )
             self.accept( "wheel_up", self.camControl.wheelUp )
 
-            self.accept( "z", self.toggleAnimation )
-            self.animateTarget = True
+            #####################################
 
-        def toggleAnimation( self ):
-            self.animateTarget = (self.animateTarget == False)
+            label("[WASD]: Move Camera", 1)
+            label("[Mouse Wheel]: Zoom Camera", 2)
+            label("[Middle Mouse]: Rotate Camera", 3)
+            label("[+]: Speed up", 5)
+            label("[-]: Slow down", 6)
 
 
     app = MyApp()
