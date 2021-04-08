@@ -31,7 +31,7 @@ python3 Samples/ReacherSample.py
 
 ### Biped Sample: ###
 
-![](Biped.gif)
+![](BipedSample.gif)
 
 The Biped sample shows a very basic two-legged walking, where the legs are placed by IK. The basic character setup is: The root is a "torso" node. To this, a hip node is rigidly attached. There are two legs, each is its own IKChain. To let the character walk, the torso node is moved, and everything else moves with it.
 While the torso moves, the legs have target points on the ground. The IK makes sure that they stay attached to these points, even when the torso moves. Periodically, the legs are moved to a new target to take a step. This new target point is always a point projected onto the floor in front of the body. How often a step is taken and how far infront of the character the new target position is depends on the movement speed of the character.
@@ -44,6 +44,8 @@ Press + and - to speed the character up or slow it down. Note that this is very 
 
 ### Tentacle Sample: ###
 
+![](TentacleSample.gif)
+
 Shows how a chain can be set up from a existing mesh with bones.
 
 You can switch between ball joints and hinge joints. Note that when using ball joints, the mesh will sometimes get squished together - this happens when a bone rolls (for which there is currently no control in this library).
@@ -54,6 +56,8 @@ python3 Samples/TentacleSample.py
 ```
 
 ### Character Sample: ###
+
+![](CharacterSample.png)
 
 Shows a walking humanoid. Similar to the Biped Sample, but this one uses a mesh, slightly more complicated walking method and can walk up and down slopes.
 
