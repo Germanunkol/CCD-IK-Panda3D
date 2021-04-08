@@ -94,6 +94,8 @@ if __name__ == "__main__":
             # Visualize the joints:
             self.ikChain.debugDisplay( lineLength=0.5 )
 
+            self.racket = None
+
             ##################################
             ## Target point:
 
@@ -127,6 +129,8 @@ if __name__ == "__main__":
             self.accept( "k", self.moveRootUp )
             self.accept( "1", self.setHingeConstraints )
             self.accept( "2", self.setBallConstraints )
+
+            self.accept( "r", self.toggleRacket )
         
             label("[WASD]: Move Camera", 1)
             label("[Mouse Wheel]: Zoom Camera", 2)
@@ -136,6 +140,7 @@ if __name__ == "__main__":
             label("[K]: Move Root Down", 7)
             label("[1]: Use Hinge Constraints", 8)
             label("[2]: Use Ball Constraints", 9)
+            label("[R]: Attach a racket to the end effector bone", 11)
 
             print("---------------------------------")
             print("Full tree:")
@@ -182,6 +187,14 @@ if __name__ == "__main__":
 
             self.ikChain.debugDisplay( lineLength=0.5 )
 
+        def toggleRacket( self ):
+            if self.racket:
+                self.racket.removeNode()
+                self.racket = None
+            else:
+                self.racket = createRacket()
+                endEffector = self.ikChain.getBone( f"Bone.007" )
+                self.racket.reparentTo( endEffector.controlNode )
 
         def moveRootUp( self ):
             self.root.setPos( self.root.getPos() + LVector3f.unitZ()*globalClock.getDt()*3 )

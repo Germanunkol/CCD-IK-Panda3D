@@ -108,6 +108,60 @@ def createSegment( p1, p2, thickness=5, col=None ):
     geom = lines.create()
     return geom
 
+def createRacket( thickness=5, col=None ):
+
+    if col == None:
+        col = (random.random(), random.random(), random.random())
+
+    handleLen = 0.9
+    ringBase = 1.1
+    ringWidth = 0.7
+    ringHeight = 0.9
+
+    # Create handle:
+    lines = LineSegs()
+    lines.setThickness( thickness )
+    lines.setColor( *col )
+    lines.moveTo( 0,0,0 )
+    lines.drawTo( 0,0,handleLen )
+    # Create ring:
+    lines.moveTo( 0,0,ringBase )
+    for i in range( 16 ):
+        ang = (i+1)/16*math.pi*2
+        print(ang)
+        x = ringWidth*0.5*math.sin( ang )
+        z = -ringHeight*0.5*math.cos( ang ) + ringHeight*0.5 + ringBase
+        lines.drawTo( x, 0, z )
+    ang = math.pi*0.1
+    x = ringWidth*0.5*math.sin( ang )
+    z = -ringHeight*0.5*math.cos( ang ) + ringHeight*0.5 + ringBase
+    lines.moveTo( 0,0,handleLen )
+    lines.drawTo( x, 0, z )
+    ang = -math.pi*0.1
+    x = ringWidth*0.5*math.sin( ang )
+    z = -ringHeight*0.5*math.cos( ang ) + ringHeight*0.5 + ringBase
+    lines.moveTo( 0,0,handleLen )
+    lines.drawTo( x, 0, z )
+
+    racket = lines.create()
+
+    ## Create net:
+    #lines = LineSegs()
+    #lines.setThickness( thickness*0.5 )
+    #lines.setColor( 1,1,1 )
+    #for i in range( 10 ):
+    #    z = ringBase + ringHeight*i/10
+    #    #x = 
+    #    #ang = 
+    #    dz = ringHeight*i/10 - ringHeight*0.5
+    #    print("dz",dz)
+
+    #net = lines.create()
+
+    node = NodePath( racket )
+    #node.attachTo( net )
+    return node
+
 
 def createDebugNormals( verts, length=0.1, thickness=1, col=None ):
 
