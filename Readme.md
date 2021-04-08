@@ -99,16 +99,17 @@ There is also a convenience class to handle most of the work for you when settin
 By default, each bone uses a ball constraint which is limited to the range from -pi to pi. You can change the constraint by calling one of the following:
 
 ```python
+# Set the bone to static, i.e. the bone's local rotatin will never be changed by the IK solver:
 IKChain.setStatic( jointName )
-# Will set the bone to static, i.e. the bone's local rotatin will never be changed by the IK solver.
-```
-```python
+
+# Create Hinge constraint (rotation only on the given axis).
+# Axis should be normalized, minAng and maxAng should be in radians
+# (and probably in the range from -pi to pi).
 IKChain.setHingeConstraint( jointName, axis, minAng, maxAng )
-# Axis should be normalized, minAng and maxAng should be in radians (and probably in the range from -pi to pi).
-```
-```python
-IKChain.setBallConstraint( jointName, minAng, maxAng )
+
+# Create Ball joint:
 # minAng and maxAng should be in radians (and probably in the range from -pi to pi).
+IKChain.setBallConstraint( jointName, minAng, maxAng )
 ```
 
 ### Running IK: ###
