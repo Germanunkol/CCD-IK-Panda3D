@@ -99,10 +99,14 @@ if __name__ == "__main__":
             self.accept( "p", self.toggleAnimation )
             self.animateTarget = True
 
+            self.accept( "r", self.toggleRacket )
+            self.racket = None
+
             label("[WASD]: Move Camera", 1)
             label("[Mouse Wheel]: Zoom Camera", 2)
             label("[Middle Mouse]: Rotate Camera", 3)
             label("[P]: Pause Animation", 5)
+            label("[R]: Attach a racket to the end effector bone", 7)
 
         def moveTarget( self, task ):
             if self.animateTarget:
@@ -114,6 +118,17 @@ if __name__ == "__main__":
 
             self.ikChain.updateIK()
             return task.cont
+
+        def toggleRacket( self ):
+            if self.racket:
+                self.racket.removeNode()
+                self.racket = None
+            else:
+                self.racket = createRacket()
+                endEffector = self.ikChain.getBone( "joint5" )
+                self.racket.reparentTo( endEffector.controlNode )
+
+
 
         def toggleAnimation( self ):
             self.animateTarget = (self.animateTarget == False)
