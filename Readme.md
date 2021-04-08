@@ -115,11 +115,30 @@ IKChain.setBallConstraint( jointName, minAng, maxAng )
 
 Independently of how you set up your chain, call IKChain.setTarget (once) and IKChain.updateIK (every frame) to make the chain (try to) reach for a target.
 
+Attaching objects:
+---------------------------
+Since the code creates controlNodes which always reflect the joint positions after the call to updateIK(), attaching objects is as simple as attaching them to the control node of a joint.
+In the ReacherSample and TentacleSample, there are examples of how to attach an object (in this case, a tennis racket) to the end effectors. Press "R" to create or remove the Racket.
+
 Setting up mesh with bones:
 ---------------------------
 - When exporting from Blender, make sure there is a vertex group for every bone - even if it's empty (i.e. if you have a bone called "Bone.002" there must be a vertex group called "Bone.002"). Otherwise, the bone gets positioned at the model root by Panda3D, and offsets are no longer correct. Hint: in Blender, these vertex groups are set up automatically when parenting an armature to the mesh and selecting the automatic weight assignment.
 - Make sure every bone is connected to its predecessor.
 - Make sure the mesh itself has _no_ transformation applied. In Blender before exporting, select the mesh (not the armature!) go to Object Mode and select "Object->Clear->Location". Same goes for scale and rotation.
+
+### Removing initial bone rotation:
+For best results, all bones should have *no* rotations applied.
+This picture shows how bones are usually set up (left) and how they should look for IK to work properly (right):
+![Bone Setup](BoneSetup.png)
+
+I supply a script which can do this in Blender (thanks to Yonnji for the hints and code example!), you can find that in the person.blend file.
+
+Alternatively, it can be done manually:
+For every bone (in edit mode), do the following:
+	1. Select the bone and disconnect it (Alt+P, then choose "Disconnect Bone")
+	2. Move the tail of the bone to be at the same position as the head, plus some offset in Y-direction: In the 3D view, press N to bring up the properties panel. In the transform header, copy the values from the head to the tail. In the entry for the tail's y, add a small amount.
+	3. In the same panel, set the bone's "Roll" to 0.
+
 
 Further notes and hints:
 --------
