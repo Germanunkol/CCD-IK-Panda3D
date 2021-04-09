@@ -46,26 +46,26 @@ class Biped():
         
         # First, rotate 90 degrees outwards:
         upperLegL = au.createJoint( "upperLegL", parentJoint=hipL,
-                translate=-LVector3f.unitX()*0.13, rotAxis=LVector3f.unitY(), rotAngRad=math.pi*0.5 )
+                translate=-LVector3f.unitX()*0.13 )
 
         lowerLegL = au.createJoint( "lowerLegL", parentJoint=upperLegL,
-                translate=LVector3f.unitY()*0.45 )
+                translate=LVector3f.unitZ()*0.45 )
 
         footL = au.createJoint( "footL", parentJoint=lowerLegL,
-                translate=LVector3f.unitY()*0.6 )
+                translate=LVector3f.unitZ()*0.6 )
 
         ###############
         # Right leg:
         hipR = au.createJoint( "hipR", parentJoint=rootJoint )
         # First, rotate 90 degrees outwards:
         upperLegR = au.createJoint( "upperLegR", parentJoint=hipR,
-                translate=LVector3f.unitX()*0.13, rotAxis=LVector3f.unitY(), rotAngRad=math.pi*0.5 )
+                translate=LVector3f.unitX()*0.13 )
 
         lowerLegR = au.createJoint( "lowerLegR", parentJoint=upperLegR,
-                translate=LVector3f.unitY()*0.45 )
+                translate=LVector3f.unitZ()*0.45 )
 
         footR = au.createJoint( "footR", parentJoint=lowerLegR,
-                translate=LVector3f.unitY()*0.6 )
+                translate=LVector3f.unitZ()*0.6 )
 
         ## IMPORTANT! Let the ArmatureUtils create the actor and set up control nodes:
         au.finalize()
@@ -88,7 +88,7 @@ class Biped():
 
         self.ikChainLegLeft.setStatic( hipL.getName() )
         self.ikChainLegLeft.setHingeConstraint( lowerLegL.getName(),
-                LVector3f.unitZ(), minAng=0, maxAng=math.pi*0.5 )
+                LVector3f.unitX(), minAng=0, maxAng=math.pi*0.5 )
 
         self.ikChainLegLeft.debugDisplay()
 
@@ -107,7 +107,7 @@ class Biped():
 
         self.ikChainLegRight.setStatic( hipR.getName() )
         self.ikChainLegRight.setHingeConstraint( lowerLegR.getName(),
-                LVector3f.unitZ(), minAng=0, maxAng=math.pi*0.5 )
+                LVector3f.unitX(), minAng=0, maxAng=math.pi*0.5 )
 
         self.ikChainLegRight.debugDisplay()
 
