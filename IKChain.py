@@ -1,9 +1,9 @@
 from panda3d.core import *
 from direct.actor.Actor import Actor
 import random, math
-from Bone import Bone
-from Utils import *
-from VecUtils import *
+from .Bone import Bone
+from .Utils import *
+from .VecUtils import *
 
 class IKChain():
 

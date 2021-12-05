@@ -241,4 +241,9 @@ def label( text, line ):
 
     return lbl
 
+def xRayNode( node ):
+    node.setBin("fixed", 0)
+    node.setDepthTest(False)
+    node.setDepthWrite(False)
+
 

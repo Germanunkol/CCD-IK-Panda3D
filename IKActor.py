@@ -1,5 +1,5 @@
 from direct.actor.Actor import Actor
-from IKChain import IKChain
+from .IKChain import IKChain
 
 class IKActor():
 
