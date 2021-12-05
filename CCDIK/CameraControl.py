@@ -4,7 +4,7 @@ from panda3d.core import LPoint3, LVector3f
 from panda3d.core import KeyboardButton, MouseButton
 from panda3d.core import Quat
 import math
-from Utils import *
+from .Utils import *
 
 class CameraControl:
 

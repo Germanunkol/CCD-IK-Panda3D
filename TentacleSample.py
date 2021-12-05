@@ -1,15 +1,14 @@
 import sys,os
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from IKChain import IKChain
-from IKActor import IKActor
-from Utils import *
+from CCDIK.IKChain import IKChain
+from CCDIK.IKActor import IKActor
+from CCDIK.Utils import *
 from direct.actor.Actor import Actor
 from panda3d.core import *
 
 if __name__ == "__main__":
 
     from direct.showbase.ShowBase import ShowBase
-    from CameraControl import CameraControl
+    from CCDIK.CameraControl import CameraControl
 
     class MyApp(ShowBase):
 

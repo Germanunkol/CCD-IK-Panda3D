@@ -1,13 +1,11 @@
-import sys,os
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from IKChain import IKChain
-from ArmatureUtils import ArmatureUtils
-from Utils import *
+from CCDIK.IKChain import IKChain
+from CCDIK.ArmatureUtils import ArmatureUtils
+from CCDIK.Utils import *
 
 if __name__ == "__main__":
 
     from direct.showbase.ShowBase import ShowBase
-    from CameraControl import CameraControl
+    from CCDIK.CameraControl import CameraControl
 
     class MyApp(ShowBase):
 
