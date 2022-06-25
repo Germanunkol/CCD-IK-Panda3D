@@ -20,18 +20,16 @@ class IKActor():
 
         # Save all joint names for convenience:
         self.jointNames = [j.getName() for j in joints]
-        print("Found joints:", self.jointNames)
 
         # Keep dictionary of joints, accessible by name for convenience
         self.joints = {}
         for j in joints:
             self.joints[j.getName()] = j
-            print(j.getName(), j.getTransform())
+            #print(j.getName(), j.getTransform())
 
         for jointName, j in self.joints.items():
             parentControlNode = self.getControlNode( jointName )
             for c in j.getChildren():
-                print("child", c.getName())
                 childControlNode = self.getControlNode( c.getName() )
                 childControlNode.reparentTo( parentControlNode )
 
@@ -68,7 +66,7 @@ class IKActor():
         if jointName in self.exposeNodes.keys():
             return self.exposeNodes[jointName]
         else:
-            exposeNode = self.actor.exposeNode( None, "modelRoot", jointName )
+            exposeNode = self.actor.exposeJoint( None, "modelRoot", jointName )
             self.exposeNodes[jointName] = exposeNode
             return exposeNode
          
