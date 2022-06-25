@@ -291,3 +291,13 @@ class IKChain():
         if rootDebugNode:
             rootDebugNode.removeNode()
 
+    def calcLength( self ):
+        length = 0
+        for i in range(1,len(self.bones)):
+            b1 = self.bones[i]
+            b0 = self.bones[i-1]
+            diff = b1.controlNode.getPos( render ) - b0.controlNode.getPos( render )
+            length += diff.length()
+        return length
+
+
