@@ -80,8 +80,8 @@ There are two ways of setting up a chain - either manually or from an existing r
 The manual case could be used if you want to attach rigid bodies to the segments of an IK chain at runtime. In this mode, you need to set up the Character, add joints to it, add the actor, and then take over control of the joints before you can create the IK chain. Note that most of this is abstracted away by the ArmatureUtils class, although this could also be replaced by your own code. The following steps assume that you use the ArmatureUtils:
 
 - Create an ArmatureUtils instance
-- Add all joints to it using the "createJoint" function. Here, you can pass a rotation and/or translation to the joint. This is the base rotation and offset that the joint will have. To make your life simple, it's recommended to _not_ use a rotation here, but you can if you want to.
-- Call `ArmatureUtils.finalize()`. This sets up the Actor for you (which you can retrieve via `ArmatureUtils.get_actor()`) as well as the `control_nodes` (which you can get via `ArmatureUtils.getControlNode()`).
+- Add all joints to it using the `create_joint` function. Here, you can pass a rotation and/or translation to the joint. This is the base rotation and offset that the joint will have. To make your life simple, it's recommended to _not_ use a rotation here, but you can if you want to.
+- Call `ArmatureUtils.finalize()`. This sets up the Actor for you (which you can retrieve via `ArmatureUtils.get_actor()`) as well as the `control_nodes` (which you can get via `ArmatureUtils.get_control_node()`).
 - Now you can set up an `IKChain`. Create an instance, and then add the joints you created to the `IKChain` using `add_joint`. Here, for every joint, you can retrieve the `control_node` via `ArmatureUtils.get_control_node()` ).
 - At this point, if you want to, you can add constraints to the bones (see below).
 - Make sure to reparent the actor which you can retrieve from `ArmatureUtils.get_actor()` to a NodePath in your scene - otherwise nothing will show up!
