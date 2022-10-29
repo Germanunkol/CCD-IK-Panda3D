@@ -26,18 +26,18 @@ Samples:
 The Reacher sample shows how to set up a simple IK chain with constraints which reaches for a moving target point:
 
 ```
-python3 Samples/ReacherSample.py
+python3 reacher_sample.py
 ```
 
 ### Biped Sample: ###
 
 ![](BipedSample.gif)
 
-The Biped sample shows a very basic two-legged walking, where the legs are placed by IK. The basic character setup is: The root is a "torso" node. To this, a hip node is rigidly attached. There are two legs, each is its own IKChain. To let the character walk, the torso node is moved, and everything else moves with it.
+The Biped sample shows a very basic two-legged walking, where the legs are placed by IK. The basic character setup is: The root is a "torso" node. To this, a hip node is rigidly attached. There are two legs, each is its own `IKChain`. To let the character walk, the torso node is moved, and everything else moves with it.
 While the torso moves, the legs have target points on the ground. The IK makes sure that they stay attached to these points, even when the torso moves. Periodically, the legs are moved to a new target to take a step. This new target point is always a point projected onto the floor in front of the body. How often a step is taken and how far infront of the character the new target position is depends on the movement speed of the character.
 
 ```
-python3 Samples/BipedSample.py
+python3 biped_sample.py
 ```
 
 Press + and - to speed the character up or slow it down. Note that this is very simplified - in a real example, the time the legs are in the air should increase when running, i.e. the gait should change.
@@ -52,7 +52,7 @@ You can switch between ball joints and hinge joints. Note that when using ball j
 To avoid this effect, use only hinge joints. Two hinge joints with an offset of zero between them should have a similar effect as a ball joint.
 
 ```
-python3 Samples/TentacleSample.py
+python3 tentacle_sample.py
 ```
 
 ### Character Sample: ###
@@ -68,7 +68,7 @@ This is meant as a simple demonstration - there is a lot that can be improved he
 - The torso is currently always kept a fixed height from the average of the feet positions. This is probably too simple - instead, it could also depend on which foot is grounded and on whether the character is moving up or down.
 
 ```
-python3 Samples/CharacterSample.py
+python3 character_sample.py
 ```
 
 Setup Notes:
@@ -81,21 +81,21 @@ The manual case could be used if you want to attach rigid bodies to the segments
 
 - Create an ArmatureUtils instance
 - Add all joints to it using the "createJoint" function. Here, you can pass a rotation and/or translation to the joint. This is the base rotation and offset that the joint will have. To make your life simple, it's recommended to _not_ use a rotation here, but you can if you want to.
-- Call ArmatureUtils.finalize(). This sets up the Actor for you (which you can retrieve via ArmatureUtils.getActor()) as well as the controlNodes (which you can get via ArmatureUtils.getControlNode()).
-- Now you can set up an IKChain. Create an instance, and then add the joints you created to the IKChain using addJoint. Here, for every joint, you can retrieve the controlNode via ArmatureUtils.getControlNode() ).
+- Call `ArmatureUtils.finalize()`. This sets up the Actor for you (which you can retrieve via `ArmatureUtils.get_actor()`) as well as the `control_nodes` (which you can get via `ArmatureUtils.getControlNode()`).
+- Now you can set up an `IKChain`. Create an instance, and then add the joints you created to the `IKChain` using `add_joint`. Here, for every joint, you can retrieve the `control_node` via `ArmatureUtils.get_control_node()` ).
 - At this point, if you want to, you can add constraints to the bones (see below).
-- Make sure to reparent the actor which you can retrieve from ArmatureUtils.getActor() to a NodePath in your scene - otherwise nothing will show up!
+- Make sure to reparent the actor which you can retrieve from `ArmatureUtils.get_actor()` to a NodePath in your scene - otherwise nothing will show up!
 
 ### Setting up from an existing mesh:
 
-There is also a convenience class to handle most of the work for you when setting up IK chains for an already existing character. This mode could be used, for example, to control the arms and legs of a character (by creating four independent IKChains). The main purpose of the IKActor class is to enable you to control joints via IK _and_ via FK (forward kinematics, i.e. setting the angles of a bone manually). This allows you, for example, to control the arms by playing an animation or setting the joint angles manually, while at the same time letting the IK solver control the legs.
+There is also a convenience class to handle most of the work for you when setting up IK chains for an already existing character. This mode could be used, for example, to control the arms and legs of a character (by creating four independent `IKChains`). The main purpose of the `IKActor` class is to enable you to control joints via IK _and_ via FK (forward kinematics, i.e. setting the angles of a bone manually). This allows you, for example, to control the arms by playing an animation or setting the joint angles manually, while at the same time letting the IK solver control the legs.
 (Note: For this to work, the armature of your mesh must be set up correctly. See hints below!)
 
 - Load your model
-- Create an instance of IKActor and pass your model to its constructor
-- Reparent the IKActor to a node in your scene by calling IKActor.reparentTo(), otherwise you won't see anything
+- Create an instance of `IKActor` and pass your model to its constructor
+- Reparent the `IKActor` to a node in your scene by calling `IKActor.reparent_to()`, otherwise you won't see anything
 - For each chain you want to create, add the names of the bones to a list. This assumes that the bones are added in order, i.e. a bone must always be added after its parent.
-- Create each chain by calls to IKActor.createIKChain() (passing the joint name lists)
+- Create each chain by calls to `IKActor.create_ik_chain()` (passing the joint name lists)
 - If you wish, you can now set constraints on each joint.
 
 ### Setting up constraints: ###
@@ -104,25 +104,25 @@ By default, each bone uses a ball constraint which is limited to the range from 
 
 ```python
 # Set the bone to static, i.e. the bone's local rotatin will never be changed by the IK solver:
-IKChain.setStatic( jointName )
+IKChain.set_static( joint_name )
 
 # Create Hinge constraint (rotation only on the given axis).
 # Axis should be normalized, minAng and maxAng should be in radians
 # (and probably in the range from -pi to pi).
-IKChain.setHingeConstraint( jointName, axis, minAng, maxAng )
+IKChain.set_hinge_constraint( joint_name, axis, min_ang, max_ang )
 
 # Create Ball joint:
 # minAng and maxAng should be in radians (and probably in the range from -pi to pi).
-IKChain.setBallConstraint( jointName, minAng, maxAng )
+IKChain.set_ball_constraint( joint_name, min_ang, min_ang )
 ```
 
 ### Running IK: ###
 
-Independently of how you set up your chain, call IKChain.setTarget (once) and IKChain.updateIK (every frame) to make the chain (try to) reach for a target.
+Independently of how you set up your chain, call `IKChain.set_target` (once) and `IKChain.update_ik` (every frame) to make the chain (try to) reach for a target.
 
 Attaching objects:
 ---------------------------
-Since the code creates controlNodes which always reflect the joint positions after the call to updateIK(), attaching objects is as simple as attaching them to the control node of a joint.
+Since the code creates `control_nodes` which always reflect the joint positions after the call to `update_ik()`, attaching objects is as simple as attaching them to the control node of a joint.
 In the ReacherSample and TentacleSample, there are examples of how to attach an object (in this case, a tennis racket) to the end effectors. Press "R" to create or remove the Racket.
 
 Setting up mesh with bones:
