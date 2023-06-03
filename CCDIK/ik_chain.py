@@ -160,9 +160,8 @@ class IKChain():
                             #ang = -ang
                             #rot_axis = -rot_axis
 
-                    #annealing = (j+1)/len(self.bones)
-                    #print("annealing", annealing)
-                    #q = q_old + (q_new-q_old)*annealing
+                    annealing = ((j+1)/len(self.bones))**2
+                    q = q_old + (q_new-q_old)*annealing
 
                     q_new.set_from_axis_angle_rad( ang, rot_axis )
 
