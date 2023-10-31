@@ -76,6 +76,7 @@ if __name__ == "__main__":
                 joint_names.append( f"Bone.{i:03d}" )
 
             self.ik_chain = self.ik_actor.create_ik_chain( joint_names )
+            self.ik_chain.set_annealing_exponent( 3 )
 
             # Set constraints:
             self.ik_chain.set_ball_constraint( "Bone", min_ang=-math.pi*0.9, max_ang=math.pi*0.9 )
@@ -130,6 +131,9 @@ if __name__ == "__main__":
             self.accept( "2", self.set_ball_constraints )
 
             self.accept( "r", self.toggle_racket )
+
+            self.accept( "+", self.increase_annealing_exponent )
+            self.accept( "-", self.decrease_annealing_exponent )
         
             label("[WASD]: Move Camera", 1)
             label("[Mouse Wheel]: Zoom Camera", 2)
@@ -140,6 +144,12 @@ if __name__ == "__main__":
             label("[1]: Use Hinge Constraints", 8)
             label("[2]: Use Ball Constraints", 9)
             label("[R]: Attach a racket to the end effector bone", 11)
+
+            label("[+]: Increase annealing exponent", 13)
+            label("[-]: Decrease annealing exponent", 14)
+
+            self.info_texts = {}
+            self.update_info()
 
             print("---------------------------------")
             print("Full tree:")
@@ -195,6 +205,15 @@ if __name__ == "__main__":
                 end_effector = self.ik_chain.get_bone( f"Bone.007" )
                 self.racket.reparent_to( end_effector.control_node )
 
+        def increase_annealing_exponent( self ):
+            cur = self.ik_chain.annealing_exponent
+            self.ik_chain.set_annealing_exponent( cur + 1 )
+            self.update_info()
+        def decrease_annealing_exponent( self ):
+            cur = self.ik_chain.annealing_exponent
+            self.ik_chain.set_annealing_exponent( cur - 1 )
+            self.update_info()
+
         def move_root_up( self ):
             self.root.set_pos( self.root.get_pos() + LVector3f.unit_z()*globalClock.get_dt()*3 )
 
@@ -204,6 +223,11 @@ if __name__ == "__main__":
         def toggle_animation( self ):
             self.animate_target = (self.animate_target == False)
 
+        def update_info( self ):
+            for k, v in self.info_texts.items():
+                v.remove_node()
+            self.info_texts["annealing"] = \
+                    info( f"Annealing exponent: {self.ik_chain.annealing_exponent}", 1 )
 
     app = MyApp()
     app.run()

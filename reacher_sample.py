@@ -50,6 +50,7 @@ if __name__ == "__main__":
             ## Create an IK chain from the armature:
 
             self.ik_chain = IKChain( au.get_actor() )
+            self.ik_chain.set_annealing_exponent( 4 )
 
             bone = None
             for i in range( 6 ):
@@ -89,6 +90,10 @@ if __name__ == "__main__":
             self.ik_chain.set_target( self.ik_target )
 
             ############################################
+            ## Placeholder:
+            self.racket = None
+
+            ############################################
             ## Set up controls:
 
             self.accept( "wheel_down", self.cam_control.wheel_down )
@@ -98,13 +103,22 @@ if __name__ == "__main__":
             self.animate_target = True
 
             self.accept( "r", self.toggle_racket )
-            self.racket = None
+
+            self.accept( "+", self.increase_annealing_exponent )
+            self.accept( "-", self.decrease_annealing_exponent )
 
             label("[WASD]: Move Camera", 1)
             label("[Mouse Wheel]: Zoom Camera", 2)
             label("[Middle Mouse]: Rotate Camera", 3)
             label("[P]: Pause Animation", 5)
             label("[R]: Attach a racket to the end effector bone", 7)
+
+            label("[+]: Increase annealing exponent", 9)
+            label("[-]: Decrease annealing exponent", 10)
+
+            self.info_texts = {}
+            self.update_info()
+
 
         def move_target( self, task ):
             if self.animate_target:
@@ -126,11 +140,24 @@ if __name__ == "__main__":
                 end_effector = self.ik_chain.get_bone( "joint5" )
                 self.racket.reparent_to( end_effector.control_node )
 
+        def increase_annealing_exponent( self ):
+            cur = self.ik_chain.annealing_exponent
+            self.ik_chain.set_annealing_exponent( cur + 1 )
+            self.update_info()
+        def decrease_annealing_exponent( self ):
+            cur = self.ik_chain.annealing_exponent
+            self.ik_chain.set_annealing_exponent( cur - 1 )
+            self.update_info()
 
 
         def toggle_animation( self ):
             self.animate_target = (self.animate_target == False)
 
+        def update_info( self ):
+            for k, v in self.info_texts.items():
+                v.remove_node()
+            self.info_texts["annealing"] = \
+                    info( f"Annealing exponent: {self.ik_chain.annealing_exponent}", 1 )
 
     app = MyApp()
     app.run()

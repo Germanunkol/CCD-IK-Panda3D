@@ -302,7 +302,7 @@ if __name__ == "__main__":
     d1 = LVector3f( 1, 0, 0 )
     p2 = LVector3f( 0, 0, 1 )
     d2 = LVector3f( 0, 1, 0 )
-    print( line_line_distance( p1, d1, p2, d2 ) )
+    print( "Line-line distance:", line_line_distance( p1, d1, p2, d2 ) )
 
 
 

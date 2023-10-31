@@ -128,7 +128,6 @@ def create_racket( thickness=5, col=None ):
     lines.move_to( 0,0,ring_base )
     for i in range( 16 ):
         ang = (i+1)/16*math.pi*2
-        print(ang)
         x = ring_width*0.5*math.sin( ang )
         z = -ring_height*0.5*math.cos( ang ) + ring_height*0.5 + ring_base
         lines.draw_to( x, 0, z )
@@ -240,6 +239,17 @@ def label( text, line ):
             align=TextNode.ALeft)
 
     return lbl
+
+def info( text, line ):
+    lbl = OnscreenText( text=text,
+            parent=base.a2dTopRight,
+            scale=.05,
+            pos=(-0.06, -.06 * line - 0.03),
+            fg=(1, 1, 1, 1),
+            align=TextNode.ARight)
+
+    return lbl
+
 
 def x_ray_node( node ):
     node.set_bin("fixed", 0)

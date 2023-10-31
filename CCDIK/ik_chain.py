@@ -23,6 +23,9 @@ class IKChain():
 
         self.end_effector = None
 
+        # Default: exponent is zero (no annealing)
+        self.annealing_exponent = 0
+
 
     def add_joint( self, joint, control_node, parent_bone=None, static=False ):
 
@@ -83,6 +86,20 @@ class IKChain():
         # This will end up affecting the actual mesh.
         for bone in self.bones:
             bone.control_node.set_quat( bone.control_node.get_quat() )
+
+    def set_annealing_exponent( self, exponent ):
+        """ Set the annealing strength
+
+        Annealing is the process of reducing rotation of joints further away from the root.
+        This attempts to counter an effect inherent to CCD-IK which lets joints further
+        down the chain rotate much more than those closer to the root.
+
+        Valid values are all positive numbers >= 0. (Usually use number between 1 and 4).
+        Note: This is not tested well and has less of an effect than I had hoped for.
+
+        Passing 0 disables annealing.
+        """
+        self.annealing_exponent = max( exponent, 0 )
 
     def inverse_kinematics_cCD( self, threshold = 1e-2, min_iterations=1, max_iterations=10 ):
 
@@ -160,10 +177,12 @@ class IKChain():
                             #ang = -ang
                             #rot_axis = -rot_axis
 
-                    annealing = ((j+1)/len(self.bones))**2
-                    q = q_old + (q_new-q_old)*annealing
 
                     q_new.set_from_axis_angle_rad( ang, rot_axis )
+
+                    bone_factor = (j+1)/(len(self.bones)-1)
+                    annealing = bone_factor**self.annealing_exponent
+                    q_new = q_old + (q_new-q_old)*annealing
 
                     bone_node.set_quat( q_new )
 
