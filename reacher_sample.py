@@ -2,6 +2,7 @@ from CCDIK.ik_chain import IKChain
 from CCDIK.armature_utils import ArmatureUtils
 from CCDIK.utils import *
 
+
 if __name__ == "__main__":
 
     from direct.showbase.ShowBase import ShowBase

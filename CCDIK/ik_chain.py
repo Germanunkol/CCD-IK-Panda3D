@@ -190,7 +190,7 @@ class IKChain():
     def set_target( self, node ):
         self.target = node
 
-    def debug_display( self, line_length=0.2, x_ray=True, draw_constraints=True ):
+    def debug_display( self, line_length=0.2, thickness=2, x_ray=True, draw_constraints=True ):
 
         self.remove_debug_display()
 
@@ -229,7 +229,7 @@ class IKChain():
 
             # Draw my offset in parent space
             lines = LineSegs()
-            lines.set_thickness( 3 )
+            lines.set_thickness( thickness )
             lines.set_color( bone.col[0], bone.col[1], bone.col[2], 1 )
             lines.move_to( 0, 0, 0 )
             my_pos = bone.control_node.get_pos( parent_node )
@@ -245,14 +245,14 @@ class IKChain():
 
                     lines = LineSegs()
                     lines.set_color( 0.6, 0.3, 0.3 )
-                    lines.set_thickness( 5 )
+                    lines.set_thickness( thickness )
                     lines.move_to( 0,0,0 )
                     lines.draw_to( l )
                     bone.debug_node.attach_new_node(lines.create())
         
                     lines = LineSegs()
                     lines.set_color( 0.8, 0.1, 0.2 )
-                    lines.set_thickness( 3 )
+                    lines.set_thickness( thickness )
                     q_min = Quat()
                     q_min.set_from_axis_angle_rad( bone.min_ang, bone.axis )
                     q_max = Quat()
@@ -266,7 +266,7 @@ class IKChain():
                     # Draw arc:
                     lines = LineSegs()
                     lines.set_color( 0.6, 0.3, 0.3 )
-                    lines.set_thickness( 2 )
+                    lines.set_thickness( thickness )
                     lines.move_to( my_pos + q_min.xform( l*0.9 ) )
                     ang = bone.min_ang
                     while ang < bone.max_ang:
@@ -282,7 +282,7 @@ class IKChain():
                 if bone.axis:
                     lines = LineSegs()
                     lines.set_color( 0.8, 0.8, 0.8 )
-                    lines.set_thickness( 4 )
+                    lines.set_thickness( thickness )
                     my_pos = bone.control_node.get_pos( parent_node )
                     lines.move_to( my_pos )
                     lines.draw_to( my_pos + bone.axis*0.1 )
