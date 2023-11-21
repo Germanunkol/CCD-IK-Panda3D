@@ -1,6 +1,5 @@
 import math
 import random
-import numpy as np
 
 from panda3d.core import LMatrix3f, LVector3f, BoundingBox, BoundingVolume, Quat
 
@@ -186,7 +185,7 @@ def closest_point_on_segment( a, b, p ):
     return result, dist
 
 def closest_point_on_path( path, p ):
-    d2 = np.inf
+    d2 = math.inf
     closest_point = None
     reached_path_end = False
     for i in range(len(path)-1):
