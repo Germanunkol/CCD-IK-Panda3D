@@ -137,12 +137,12 @@ if __name__ == "__main__":
             self.update_info()
 
             # Debug:
-            taskMgr.do_method_later( 2, self.connect_to_pstats, "pstats_connect" )
-
-        def connect_to_pstats( self, task ):
             PStatClient.connect()
+            #taskMgr.do_method_later( 2, self.connect_to_pstats, "pstats_connect" )
 
-            return task.done
+        #def connect_to_pstats( self, task ):
+        #    PStatClient.connect()
+        #    return task.done
 
         def move_target( self, task ):
             if self.animate_target:
