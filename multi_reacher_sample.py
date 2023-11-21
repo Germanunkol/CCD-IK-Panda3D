@@ -1,3 +1,5 @@
+import math
+
 from CCDIK.ik_chain import IKChain
 from CCDIK.armature_utils import ArmatureUtils
 from CCDIK.utils import *
@@ -10,7 +12,7 @@ if __name__ == "__main__":
 
     class MyApp(ShowBase):
 
-        def __init__(self):
+        def __init__(self, num_reachers = 1000 ):
             ShowBase.__init__(self)
             base.disable_mouse()
             base.set_frame_rate_meter(True)
@@ -32,7 +34,8 @@ if __name__ == "__main__":
         
             self.ik_chains = []
 
-            num_reachers = 1000
+            num_rows = int(math.sqrt(num_reachers))
+            num_cols = num_reachers/num_rows + 1
             for j in range(num_reachers):
 
                 #######################################
@@ -77,11 +80,11 @@ if __name__ == "__main__":
                 ik_chain.debug_display( draw_constraints = False )
                 self.ik_chains.append( ik_chain )
 
-                col = int( j / 20 )
-                row = j - 20*col
+                col = int( j / num_rows )
+                row = j - num_rows*col
 
-                x = col - 25
-                y = row - 10
+                x = col - num_cols*0.5
+                y = row - num_rows*0.5
                 print(row, col,"\t", x, y)
                 au.get_actor().set_pos( x, y, 0 )
 
@@ -187,5 +190,10 @@ if __name__ == "__main__":
             self.info_texts["annealing"] = \
                     info( f"Annealing exponent: {self.ik_chains[0].annealing_exponent}", 1 )
 
-    app = MyApp()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument( "--num", type=int, default = 100 )
+    args = parser.parse_args()
+
+    app = MyApp( args.num )
     app.run()
