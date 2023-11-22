@@ -63,7 +63,6 @@ class RiggedChar():
 
         self.ik_chain_leg_left = self.ik_actor.create_ik_chain( ["Hip.L", "UpperLeg.L", "LowerLeg.L", "Foot.L"] )
         self.ik_chain_leg_left.set_annealing_exponent( annealing_exponent )
-        #self.ik_chain_leg_left.set_static( "Hips" )
         self.ik_chain_leg_left.set_hinge_constraint( "Hip.L", axis=LVector3f.unit_z(),
                 min_ang=-math.pi*0.05, max_ang=math.pi*0.05 )
         self.ik_chain_leg_left.set_hinge_constraint( "UpperLeg.L", axis=LVector3f.unit_x(),
@@ -76,7 +75,6 @@ class RiggedChar():
 
         self.ik_chain_leg_right = self.ik_actor.create_ik_chain( ["Hip.R", "UpperLeg.R", "LowerLeg.R", "Foot.R"] )
         self.ik_chain_leg_right.set_annealing_exponent( annealing_exponent )
-        #self.ik_chain_leg_right.set_static( "Hips" )
         self.ik_chain_leg_right.set_hinge_constraint( "Hip.R", axis=LVector3f.unit_z(),
                 min_ang=-math.pi*0.05, max_ang=math.pi*0.05 )
         self.ik_chain_leg_right.set_hinge_constraint( "UpperLeg.R", axis=LVector3f.unit_x(),

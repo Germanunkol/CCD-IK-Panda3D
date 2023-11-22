@@ -51,10 +51,6 @@ class IKChain():
                 return b
         raise Exception(f"Cannot find joint {joint_name}!")
 
-    def set_static( self, joint_name, static=True ):
-        b = self.get_ik_joint( joint_name )
-        b.static = static
-
     def set_hinge_constraint( self, joint_name, axis, min_ang=-math.pi, max_ang=math.pi ):
         b = self.get_ik_joint( joint_name )
         b.axis = axis.normalized()

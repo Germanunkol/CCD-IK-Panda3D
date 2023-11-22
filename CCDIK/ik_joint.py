@@ -24,3 +24,5 @@ class IKJoint:
         if not child in self.children:
             self.children.append( child )
 
+    def set_static( self, static=True ):
+        self.static = static

@@ -90,7 +90,7 @@ class Biped():
         ik_joint = self.ik_chain_leg_left.add_joint( foot_l, au.get_control_node( foot_l.get_name() ),
                 parent_ik_joint=ik_joint )
 
-        self.ik_chain_leg_left.set_static( hip_l.get_name() )
+        self.ik_chain_leg_left.get_ik_joint( hip_l.get_name() ).set_static( True )
         self.ik_chain_leg_left.set_hinge_constraint( lower_leg_l.get_name(),
                 LVector3f.unit_x(), min_ang=0, max_ang=math.pi*0.5 )
 
@@ -110,7 +110,7 @@ class Biped():
         ik_joint = self.ik_chain_leg_right.add_joint( foot_r, au.get_control_node( foot_r.get_name() ),
                 parent_ik_joint=ik_joint )
 
-        self.ik_chain_leg_right.set_static( hip_r.get_name() )
+        self.ik_chain_leg_right.get_ik_joint( hip_r.get_name() ).set_static( True )
         self.ik_chain_leg_right.set_hinge_constraint( lower_leg_r.get_name(),
                 LVector3f.unit_x(), min_ang=0, max_ang=math.pi*0.5 )
 
