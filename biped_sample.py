@@ -76,13 +76,13 @@ class Biped():
 
         self.ik_chain_leg_left = IKChain( au.get_actor() )
 
-        bone = self.ik_chain_leg_left.add_joint( hip_l, au.get_control_node( hip_l.get_name() ) )
-        bone = self.ik_chain_leg_left.add_joint( upper_leg_l, au.get_control_node( upper_leg_l.get_name() ),
-                parent_bone=bone )
-        bone = self.ik_chain_leg_left.add_joint( lower_leg_l, au.get_control_node( lower_leg_l.get_name() ),
-                parent_bone=bone )
-        bone = self.ik_chain_leg_left.add_joint( foot_l, au.get_control_node( foot_l.get_name() ),
-                parent_bone=bone )
+        ik_joint = self.ik_chain_leg_left.add_joint( hip_l, au.get_control_node( hip_l.get_name() ) )
+        ik_joint = self.ik_chain_leg_left.add_joint( upper_leg_l, au.get_control_node( upper_leg_l.get_name() ),
+                parent_ik_joint=ik_joint )
+        ik_joint = self.ik_chain_leg_left.add_joint( lower_leg_l, au.get_control_node( lower_leg_l.get_name() ),
+                parent_ik_joint=ik_joint )
+        ik_joint = self.ik_chain_leg_left.add_joint( foot_l, au.get_control_node( foot_l.get_name() ),
+                parent_ik_joint=ik_joint )
 
         self.ik_chain_leg_left.set_static( hip_l.get_name() )
         self.ik_chain_leg_left.set_hinge_constraint( lower_leg_l.get_name(),
@@ -95,13 +95,13 @@ class Biped():
 
         self.ik_chain_leg_right = IKChain( au.get_actor() )
 
-        bone = self.ik_chain_leg_right.add_joint( hip_r, au.get_control_node( hip_r.get_name() ) )
-        bone = self.ik_chain_leg_right.add_joint( upper_leg_r, au.get_control_node( upper_leg_r.get_name() ),
-                parent_bone=bone )
-        bone = self.ik_chain_leg_right.add_joint( lower_leg_r, au.get_control_node( lower_leg_r.get_name() ),
-                parent_bone=bone )
-        bone = self.ik_chain_leg_right.add_joint( foot_r, au.get_control_node( foot_r.get_name() ),
-                parent_bone=bone )
+        ik_joint = self.ik_chain_leg_right.add_joint( hip_r, au.get_control_node( hip_r.get_name() ) )
+        ik_joint = self.ik_chain_leg_right.add_joint( upper_leg_r, au.get_control_node( upper_leg_r.get_name() ),
+                parent_ik_joint=ik_joint )
+        ik_joint = self.ik_chain_leg_right.add_joint( lower_leg_r, au.get_control_node( lower_leg_r.get_name() ),
+                parent_ik_joint=ik_joint )
+        ik_joint = self.ik_chain_leg_right.add_joint( foot_r, au.get_control_node( foot_r.get_name() ),
+                parent_ik_joint=ik_joint )
 
         self.ik_chain_leg_right.set_static( hip_r.get_name() )
         self.ik_chain_leg_right.set_hinge_constraint( lower_leg_r.get_name(),

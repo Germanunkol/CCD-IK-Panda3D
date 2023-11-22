@@ -2,7 +2,7 @@ import random
 from panda3d.core import LVector3f
 import math
 
-class Bone():
+class IKJoint:
 
     def __init__( self, joint, parent=None, static=False ):
 

@@ -62,14 +62,14 @@ if __name__ == "__main__":
                 ik_chain = IKChain( au.get_actor() )
                 ik_chain.set_annealing_exponent( 4 )
 
-                bone = None
+                ik_joint = None
                 for i in range( 6 ):
                     name = f"joint{i}"
                     # Now we can conveniently retrieve everything we need from the Armature_utils...
                     joint = au.get_joint( name )
                     control_node = au.get_control_node( name )
                     # ... and add it to the chain:
-                    bone = ik_chain.add_joint( joint, control_node, parent_bone=bone )
+                    ik_joint = ik_chain.add_joint( joint, control_node, parent_ik_joint=ik_joint )
                     if i < 4:
                         ik_chain.set_hinge_constraint( name, LVector3f.unit_z(),
                                 min_ang=-math.pi*0.25, max_ang=math.pi*0.25 )
@@ -140,7 +140,7 @@ if __name__ == "__main__":
             self.update_info()
 
             # Debug:
-            PStatClient.connect()
+            #PStatClient.connect()
             #taskMgr.do_method_later( 2, self.connect_to_pstats, "pstats_connect" )
 
         #def connect_to_pstats( self, task ):
@@ -166,7 +166,7 @@ if __name__ == "__main__":
             else:
                 for chain in self.ik_chains:
                     self.racket = create_racket()
-                    end_effector = ik_chain.get_bone( "joint5" )
+                    end_effector = ik_chain.get_ik_joint( "joint5" )
                     self.racket.reparent_to( end_effector.control_node )
 
         def increase_annealing_exponent( self ):

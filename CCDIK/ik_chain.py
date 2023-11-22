@@ -1,7 +1,7 @@
 from panda3d.core import *
 from direct.actor.Actor import Actor
 import random, math
-from .bone import Bone
+from .ik_joint import IKJoint
 from .utils import *
 from .vec_utils import *
 
@@ -15,7 +15,7 @@ class IKChain():
         # we create the actor, so keep it empty for now!
         self.actor = actor
 
-        self.bones = []
+        self.ik_joints = []
         self.target = None
         self.target_reached = False
 
@@ -27,37 +27,32 @@ class IKChain():
         self.annealing_exponent = 0
 
 
-    def add_joint( self, joint, control_node, parent_bone=None, static=False ):
+    def add_joint( self, joint, control_node, parent_ik_joint=None, static=False ):
 
-        #if parent_bone:
-        #    parent_ik_node = parent_bone.control_node
-        #else:
-        #    parent_ik_node = self.actor
-        
         name = joint.get_name()
 
-        bone = Bone( joint, parent=parent_bone, static=static )
-        bone.control_node = control_node
+        ik_joint = IKJoint( joint, parent=parent_ik_joint, static=static )
+        ik_joint.control_node = control_node
 
-        if parent_bone:
-            control_node.reparent_to( parent_bone.control_node )
+        if parent_ik_joint:
+            control_node.reparent_to( parent_ik_joint.control_node )
 
-        self.bones.append(bone)
+        self.ik_joints.append(ik_joint)
 
-        return bone
+        return ik_joint
 
-    def get_bone( self, joint_name ):
-        for b in self.bones:
+    def get_ik_joint( self, joint_name ):
+        for b in self.ik_joints:
             if b.joint.get_name() == joint_name:
                 return b
         raise Exception(f"Cannot find joint {joint_name}!")
 
     def set_static( self, joint_name, static=True ):
-        b = self.get_bone( joint_name )
+        b = self.get_ik_joint( joint_name )
         b.static = static
 
     def set_hinge_constraint( self, joint_name, axis, min_ang=-math.pi, max_ang=math.pi ):
-        b = self.get_bone( joint_name )
+        b = self.get_ik_joint( joint_name )
         b.axis = axis.normalized()
         b.min_ang = min_ang
         b.max_ang = max_ang
@@ -66,7 +61,7 @@ class IKChain():
             self.debug_display()
 
     def set_ball_constraint( self, joint_name, min_ang=-math.pi, max_ang=math.pi ):
-        b = self.get_bone( joint_name )
+        b = self.get_ik_joint( joint_name )
         b.axis = None
         b.min_ang = min_ang
         b.max_ang = max_ang
@@ -76,7 +71,7 @@ class IKChain():
 
     def update_ik( self, threshold = 1e-2, min_iterations=1, max_iterations=10 ):
 
-        assert len(self.bones) > 0, "IKChain requires at least one bone for update_i_k() to work!"
+        assert len(self.ik_joints) > 0, "IKChain requires at least one IKJoint for update_i_k() to work!"
 
         # Solve the IK chain for the IK nodes:
         if self.target:
@@ -84,8 +79,8 @@ class IKChain():
 
         # Copy the data from the IK chain to the actual bones.
         # This will end up affecting the actual mesh.
-        for bone in self.bones:
-            bone.control_node.set_quat( bone.control_node.get_quat() )
+        for ik_joint in self.ik_joints:
+            ik_joint.control_node.set_quat( ik_joint.control_node.get_quat() )
 
     def set_annealing_exponent( self, exponent ):
         """ Set the annealing strength
@@ -104,7 +99,7 @@ class IKChain():
     def inverse_kinematics_cCD( self, threshold = 1e-2, min_iterations=1, max_iterations=10 ):
 
         if not self.end_effector:
-            self.end_effector = self.bones[-1].control_node.attach_new_node( "End_effector" )
+            self.end_effector = self.ik_joints[-1].control_node.attach_new_node( "End_effector" )
 
         self.target_reached = False
         for i in range(max_iterations):
@@ -115,22 +110,22 @@ class IKChain():
                     self.target_reached = True
                     break
 
-            for j in range(len(self.bones)-1):
-                bone = self.bones[-j-2]
+            for j in range(len(self.ik_joints)-1):
+                ik_joint = self.ik_joints[-j-2]
 
-                if bone.static:
+                if ik_joint.static:
                     continue
 
-                bone_node = bone.control_node
-                if bone.parent:
-                    parent_node = bone.parent.control_node
+                ik_joint_node = ik_joint.control_node
+                if ik_joint.parent:
+                    parent_node = ik_joint.parent.control_node
                 else:
                     parent_node = self.actor
 
-                target = self.target.get_pos( bone_node )
+                target = self.target.get_pos( ik_joint_node )
 
                 pos = LPoint3.zero()
-                ee = self.end_effector.get_pos( bone_node )
+                ee = self.end_effector.get_pos( ik_joint_node )
 
                 d1 = target-pos
                 d2 = ee-pos
@@ -143,17 +138,17 @@ class IKChain():
                 q = Quat()
                 q.set_from_axis_angle_rad( ang, cross )
                 # Add this rotation to the current rotation:
-                q_old = bone_node.get_quat()
+                q_old = ik_joint_node.get_quat()
                 q_new = q*q_old
                 q_new.normalize()
-                #bone_node.set_quat( q_new )
+                #ik_joint_node.set_quat( q_new )
 
                 # Correct rotation for hinge:
-                if bone.axis:
-                    #q_inv = bone_node.get_quat()
+                if ik_joint.axis:
+                    #q_inv = ik_joint_node.get_quat()
                     #q_inv.invert_in_place()
-                    #my_axis_in_parent_space = q_inv.xform( bone.axis )
-                    my_axis_in_parent_space = bone.axis
+                    #my_axis_in_parent_space = q_inv.xform( ik_joint.axis )
+                    my_axis_in_parent_space = ik_joint.axis
                     swing, twist = swing_twist_decomposition( q_new, -my_axis_in_parent_space )
                     q_new = twist
 
@@ -168,23 +163,23 @@ class IKChain():
                         ang -= 2*math.pi
 
                     if abs(ang) > 1e-6 and abs(ang) < math.pi*2:
-                        if bone.axis and (rot_axis - bone.axis).length_squared() > 0.5:
+                        if ik_joint.axis and (rot_axis - ik_joint.axis).length_squared() > 0.5:
                             # Clamp the rotation value:
-                            ang = max( -bone.max_ang, min( -bone.min_ang, ang ) )
+                            ang = max( -ik_joint.max_ang, min( -ik_joint.min_ang, ang ) )
                         else:
                             # Clamp the rotation value:
-                            ang = max( bone.min_ang, min( bone.max_ang, ang ) )
+                            ang = max( ik_joint.min_ang, min( ik_joint.max_ang, ang ) )
                             #ang = -ang
                             #rot_axis = -rot_axis
 
 
                     q_new.set_from_axis_angle_rad( ang, rot_axis )
 
-                    bone_factor = (j+1)/(len(self.bones)-1)
-                    annealing = bone_factor**self.annealing_exponent
+                    ik_joint_factor = (j+1)/(len(self.ik_joints)-1)
+                    annealing = ik_joint_factor**self.annealing_exponent
                     q_new = q_old + (q_new-q_old)*annealing
 
-                    bone_node.set_quat( q_new )
+                    ik_joint_node.set_quat( q_new )
 
 
     def set_target( self, node ):
@@ -198,24 +193,24 @@ class IKChain():
 
         axes_geom = create_axes( line_length )
 
-        for i in range(len(self.bones)):
-            bone = self.bones[i]
+        for i in range(len(self.ik_joints)):
+            ik_joint = self.ik_joints[i]
 
             # Attach a new node to the ik_node. All debug info will be attached to this node.
             # This is only for cleaner removal of the node later on - by remuving the debug node,
             # all debug info will be cleared. Otherwise this node has no significance and we could
             # just as well attach everything to the ik_node itself
-            bone.debug_node = bone.control_node.attach_new_node("Debug_display")
-            bone.debug_node.set_light_off(1)
+            ik_joint.debug_node = ik_joint.control_node.attach_new_node("Debug_display")
+            ik_joint.debug_node.set_light_off(1)
 
             # Draw axes at my location and rotation (i.e. after applying my transform to my parent):
-            axes = bone.debug_node.attach_new_node( axes_geom )
-            #point = bone.ik_node.attach_new_node( create_point( col=bone.col ) )
+            axes = ik_joint.debug_node.attach_new_node( axes_geom )
+            #point = ik_joint.ik_node.attach_new_node( create_point( col=ik_joint.col ) )
 
             # Retrieve parent space:
-            if bone.parent:
-                # If we have a parent, then this parent is a bone.
-                parent_node = bone.parent.control_node
+            if ik_joint.parent:
+                # If we have a parent, then this parent is a ik_joint.
+                parent_node = ik_joint.parent.control_node
             else:
                 # Otherwise the parent is the actor itself, i.e. the root of the skeleton
                 parent_node = self.actor
@@ -230,9 +225,9 @@ class IKChain():
             # Draw my offset in parent space
             lines = LineSegs()
             lines.set_thickness( thickness )
-            lines.set_color( bone.col[0], bone.col[1], bone.col[2], 1 )
+            lines.set_color( ik_joint.col[0], ik_joint.col[1], ik_joint.col[2], 1 )
             lines.move_to( 0, 0, 0 )
-            my_pos = bone.control_node.get_pos( parent_node )
+            my_pos = ik_joint.control_node.get_pos( parent_node )
             lines.draw_to( my_pos )
             geom = lines.create()
             parent_debug_node.attach_new_node( geom )
@@ -240,23 +235,23 @@ class IKChain():
             # Draw my constraints:
             # These need to be drawn in parent space (since my rotation is done in parent space)
             if draw_constraints:
-                if bone.axis:
-                    l = get_perpendicular_vec( bone.axis )*line_length
+                if ik_joint.axis:
+                    l = get_perpendicular_vec( ik_joint.axis )*line_length
 
                     lines = LineSegs()
                     lines.set_color( 0.6, 0.3, 0.3 )
                     lines.set_thickness( thickness )
                     lines.move_to( 0,0,0 )
                     lines.draw_to( l )
-                    bone.debug_node.attach_new_node(lines.create())
+                    ik_joint.debug_node.attach_new_node(lines.create())
         
                     lines = LineSegs()
                     lines.set_color( 0.8, 0.1, 0.2 )
                     lines.set_thickness( thickness )
                     q_min = Quat()
-                    q_min.set_from_axis_angle_rad( bone.min_ang, bone.axis )
+                    q_min.set_from_axis_angle_rad( ik_joint.min_ang, ik_joint.axis )
                     q_max = Quat()
-                    q_max.set_from_axis_angle_rad( bone.max_ang, bone.axis )
+                    q_max.set_from_axis_angle_rad( ik_joint.max_ang, ik_joint.axis )
                     lines.move_to( my_pos )
                     lines.draw_to( my_pos + q_min.xform( l ) )
                     lines.move_to( my_pos )
@@ -268,42 +263,42 @@ class IKChain():
                     lines.set_color( 0.6, 0.3, 0.3 )
                     lines.set_thickness( thickness )
                     lines.move_to( my_pos + q_min.xform( l*0.9 ) )
-                    ang = bone.min_ang
-                    while ang < bone.max_ang:
+                    ang = ik_joint.min_ang
+                    while ang < ik_joint.max_ang:
                         ang += math.pi*0.1
-                        if ang > bone.max_ang:
-                            ang = bone.max_ang
+                        if ang > ik_joint.max_ang:
+                            ang = ik_joint.max_ang
                         q = Quat()
-                        q.set_from_axis_angle_rad( ang, bone.axis )
+                        q.set_from_axis_angle_rad( ang, ik_joint.axis )
                         lines.draw_to( my_pos + q.xform( l*0.9 ) )
                     parent_debug_node.attach_new_node(lines.create())
 
 
-                if bone.axis:
+                if ik_joint.axis:
                     lines = LineSegs()
                     lines.set_color( 0.8, 0.8, 0.8 )
                     lines.set_thickness( thickness )
-                    my_pos = bone.control_node.get_pos( parent_node )
+                    my_pos = ik_joint.control_node.get_pos( parent_node )
                     lines.move_to( my_pos )
-                    lines.draw_to( my_pos + bone.axis*0.1 )
+                    lines.draw_to( my_pos + ik_joint.axis*0.1 )
                     geom = lines.create()
                     constraints_axis = parent_node.attach_new_node( geom )
                     print("drawing axis", parent_node)
 
             if x_ray:
-                bone.debug_node.set_bin("fixed", 0)
-                bone.debug_node.set_depth_test(False)
-                bone.debug_node.set_depth_write(False)
+                ik_joint.debug_node.set_bin("fixed", 0)
+                ik_joint.debug_node.set_depth_test(False)
+                ik_joint.debug_node.set_depth_write(False)
                 parent_debug_node.set_bin("fixed", 0)
                 parent_debug_node.set_depth_test(False)
                 parent_debug_node.set_depth_write(False)
 
     def remove_debug_display( self ):
-        for i in range(len(self.bones)):
-            bone = self.bones[i]
-            if hasattr( bone, "debug_node" ):
-                bone.debug_node.remove_node()
-                bone.debug_node = None
+        for i in range(len(self.ik_joints)):
+            ik_joint = self.ik_joints[i]
+            if hasattr( ik_joint, "debug_node" ):
+                ik_joint.debug_node.remove_node()
+                ik_joint.debug_node = None
 
         root_debug_node = self.actor.find("Debug_display")
         if root_debug_node:
@@ -311,9 +306,9 @@ class IKChain():
 
     def calc_length( self ):
         length = 0
-        for i in range(1,len(self.bones)):
-            b1 = self.bones[i]
-            b0 = self.bones[i-1]
+        for i in range(1,len(self.ik_joints)):
+            b1 = self.ik_joints[i]
+            b0 = self.ik_joints[i-1]
             diff = b1.control_node.get_pos( render ) - b0.control_node.get_pos( render )
             length += diff.length()
         return length

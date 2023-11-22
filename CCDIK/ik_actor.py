@@ -74,13 +74,13 @@ class IKActor():
         
         chain = IKChain( actor=self.actor )
 
-        parent_bone = None
+        parent_ik_joint = None
         for joint_name in joint_names:
             assert joint_name in self.joints.keys(), "Joint '" + joint_name + "' cannot be added to chain - not found!" 
             joint = self.joints[joint_name]
             control_node = self.get_control_node( joint_name )
-            new_bone = chain.add_joint( joint, control_node, parent_bone=parent_bone )
-            parent_bone = new_bone
+            new_ik_joint = chain.add_joint( joint, control_node, parent_ik_joint=parent_ik_joint )
+            parent_ik_joint = new_ik_joint
 
         #chain.debug_display()
 
