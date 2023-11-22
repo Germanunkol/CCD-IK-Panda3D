@@ -108,6 +108,8 @@ class IKChain():
         assert self.root is not None and len(self.ik_joints) > 0, \
                 "Cannot compute inverse kinematics on empty chain"
 
+        assert self.target is not None, "Cannot comput inverse kinematics before target is set"
+
         self.target_reached = False
         for i in range(max_iterations):
 
