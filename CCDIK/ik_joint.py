@@ -13,7 +13,6 @@ class IKJoint:
         self.parent = parent
         self.static = static
         self.control_node = None
-        self.exposed_node = None
         #self.ik_node = None
         self.children = []
         if parent:
