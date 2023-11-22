@@ -63,25 +63,25 @@ class RiggedChar():
 
         self.ik_chain_leg_left = self.ik_actor.create_ik_chain( ["Hip.L", "UpperLeg.L", "LowerLeg.L", "Foot.L"] )
         self.ik_chain_leg_left.set_annealing_exponent( annealing_exponent )
-        self.ik_chain_leg_left.set_hinge_constraint( "Hip.L", axis=LVector3f.unit_z(),
+        self.ik_chain_leg_left.get_ik_joint( "Hip.L" ).set_hinge_constraint( axis=LVector3f.unit_z(),
                 min_ang=-math.pi*0.05, max_ang=math.pi*0.05 )
-        self.ik_chain_leg_left.set_hinge_constraint( "UpperLeg.L", axis=LVector3f.unit_x(),
+        self.ik_chain_leg_left.get_ik_joint( "UpperLeg.L" ).set_hinge_constraint( axis=LVector3f.unit_x(),
                 min_ang=-math.pi*0.2, max_ang=math.pi*0.2 )
-        self.ik_chain_leg_left.set_hinge_constraint( "LowerLeg.L", axis=LVector3f.unit_x(),
+        self.ik_chain_leg_left.get_ik_joint( "LowerLeg.L" ).set_hinge_constraint( axis=LVector3f.unit_x(),
                 min_ang=-math.pi*0.5, max_ang=-math.pi*0.05 )
-        self.ik_chain_leg_left.set_hinge_constraint( "Foot.L", axis=LVector3f.unit_x(),
+        self.ik_chain_leg_left.get_ik_joint( "Foot.L" ).set_hinge_constraint( axis=LVector3f.unit_x(),
                 min_ang=-math.pi*0.5, max_ang=math.pi*0.5 )
 
 
         self.ik_chain_leg_right = self.ik_actor.create_ik_chain( ["Hip.R", "UpperLeg.R", "LowerLeg.R", "Foot.R"] )
         self.ik_chain_leg_right.set_annealing_exponent( annealing_exponent )
-        self.ik_chain_leg_right.set_hinge_constraint( "Hip.R", axis=LVector3f.unit_z(),
+        self.ik_chain_leg_right.get_ik_joint( "Hip.R" ).set_hinge_constraint( axis=LVector3f.unit_z(),
                 min_ang=-math.pi*0.05, max_ang=math.pi*0.05 )
-        self.ik_chain_leg_right.set_hinge_constraint( "UpperLeg.R", axis=LVector3f.unit_x(),
+        self.ik_chain_leg_right.get_ik_joint( "UpperLeg.R" ).set_hinge_constraint( axis=LVector3f.unit_x(),
                 min_ang=-math.pi*0.2, max_ang=math.pi*0.2 )
-        self.ik_chain_leg_right.set_hinge_constraint( "LowerLeg.R", axis=LVector3f.unit_x(),
+        self.ik_chain_leg_right.get_ik_joint( "LowerLeg.R" ).set_hinge_constraint( axis=LVector3f.unit_x(),
                 min_ang=-math.pi*0.5, max_ang=-math.pi*0.05 )
-        self.ik_chain_leg_right.set_hinge_constraint( "Foot.R", axis=LVector3f.unit_x(),
+        self.ik_chain_leg_right.get_ik_joint( "Foot.R" ).set_hinge_constraint( axis=LVector3f.unit_x(),
                 min_ang=-math.pi*0.5, max_ang=math.pi*0.5 )
 
 
@@ -93,24 +93,24 @@ class RiggedChar():
 
         self.ik_chain_arm_left = self.ik_actor.create_ik_chain( ["Shoulder.L", "UpperArm.L", "LowerArm.L", "Hand.L"] )
         self.ik_chain_arm_left.set_annealing_exponent( annealing_exponent )
-        self.ik_chain_arm_left.set_hinge_constraint( "Shoulder.L", axis=LVector3f.unit_z(),
+        self.ik_chain_arm_left.get_ik_joint( "Shoulder.L" ).set_hinge_constraint( axis=LVector3f.unit_z(),
                 min_ang=math.pi*0.05, max_ang=math.pi*0.05 )
-        self.ik_chain_arm_left.set_hinge_constraint( "UpperArm.L", axis=LVector3f.unit_y(),
+        self.ik_chain_arm_left.get_ik_joint( "UpperArm.L" ).set_hinge_constraint( axis=LVector3f.unit_y(),
                 min_ang=-math.pi*0.5, max_ang=math.pi*0.5 )
-        self.ik_chain_arm_left.set_hinge_constraint( "LowerArm.L", axis=LVector3f.unit_z(),
+        self.ik_chain_arm_left.get_ik_joint( "LowerArm.L" ).set_hinge_constraint( axis=LVector3f.unit_z(),
                 min_ang=-math.pi*0.5, max_ang=0 )
-        self.ik_chain_arm_left.set_hinge_constraint( "Hand.L", axis=LVector3f.unit_x(),
+        self.ik_chain_arm_left.get_ik_joint( "Hand.L" ).set_hinge_constraint( axis=LVector3f.unit_x(),
                 min_ang=-math.pi*0.3, max_ang=math.pi*0.3 )
 
         self.ik_chain_arm_right = self.ik_actor.create_ik_chain( ["Shoulder.R", "UpperArm.R", "LowerArm.R", "Hand.R"] )
         self.ik_chain_arm_right.set_annealing_exponent( annealing_exponent )
-        self.ik_chain_arm_right.set_hinge_constraint( "Shoulder.R", axis=LVector3f.unit_z(),
+        self.ik_chain_arm_right.get_ik_joint( "Shoulder.R" ).set_hinge_constraint( axis=LVector3f.unit_z(),
                 min_ang=math.pi*0.05, max_ang=math.pi*0.05 )
-        self.ik_chain_arm_right.set_hinge_constraint( "UpperArm.R", axis=LVector3f.unit_y(),
+        self.ik_chain_arm_right.get_ik_joint( "UpperArm.R" ).set_hinge_constraint( axis=LVector3f.unit_y(),
                 min_ang=-math.pi*0.5, max_ang=math.pi*0.5 )
-        self.ik_chain_arm_right.set_hinge_constraint( "LowerArm.R", axis=LVector3f.unit_z(),
+        self.ik_chain_arm_right.get_ik_joint( "LowerArm.R" ).set_hinge_constraint( axis=LVector3f.unit_z(),
                 min_ang=0, max_ang=math.pi*0.5 )
-        self.ik_chain_arm_right.set_hinge_constraint( "Hand.R", axis=LVector3f.unit_x(),
+        self.ik_chain_arm_right.get_ik_joint( "Hand.R" ).set_hinge_constraint( axis=LVector3f.unit_x(),
                 min_ang=-math.pi*0.3, max_ang=math.pi*0.3 )
 
 

@@ -79,15 +79,15 @@ if __name__ == "__main__":
             self.ik_chain.set_annealing_exponent( 3 )
 
             # Set constraints:
-            self.ik_chain.set_ball_constraint( "Bone", min_ang=-math.pi*0.9, max_ang=math.pi*0.9 )
+            self.ik_chain.get_ik_joint( "Bone" ).set_ball_constraint( min_ang=-math.pi*0.9, max_ang=math.pi*0.9 )
             for i in range(1,8):
                 # Set X-axis constraint for bones with even index
                 if i % 2 == 0:
-                    self.ik_chain.set_hinge_constraint( f"Bone.{i:03d}", LVector3f.unit_x(),
+                    self.ik_chain.get_ik_joint( f"Bone.{i:03d}" ).set_hinge_constraint( LVector3f.unit_x(),
                             min_ang=-math.pi*0.6, max_ang=math.pi*0.6 )
                 # Set Z-axis constraint for the others:
                 else:
-                    self.ik_chain.set_hinge_constraint( f"Bone.{i:03d}", LVector3f.unit_z(),
+                    self.ik_chain.get_ik_joint( f"Bone.{i:03d}" ).set_hinge_constraint( LVector3f.unit_z(),
                             min_ang=-math.pi*0.6, max_ang=math.pi*0.6 )
 
 
@@ -171,16 +171,16 @@ if __name__ == "__main__":
         def set_hinge_constraints( self ):
 
             # Set constraints:
-            self.ik_chain.set_hinge_constraint( "Bone", LVector3f.unit_z(),
+            self.ik_chain.get_ik_joint( "Bone" ).set_hinge_constraint( LVector3f.unit_z(),
                     min_ang=-math.pi*0.9, max_ang=math.pi*0.9 )
             for i in range(1,8):
                 # Set X-axis constraint for bones with even index
                 if i % 2 == 0:
-                    self.ik_chain.set_hinge_constraint( f"Bone.{i:03d}", LVector3f.unit_x(),
+                    self.ik_chain.get_ik_joint( f"Bone.{i:03d}" ).set_hinge_constraint( LVector3f.unit_x(),
                             min_ang=-math.pi*0.6, max_ang=math.pi*0.6 )
                 # Set Z-axis constraint for the others:
                 else:
-                    self.ik_chain.set_hinge_constraint( f"Bone.{i:03d}", LVector3f.unit_z(),
+                    self.ik_chain.get_ik_joint( f"Bone.{i:03d}" ).set_hinge_constraint( LVector3f.unit_z(),
                             min_ang=-math.pi*0.6, max_ang=math.pi*0.6 )
 
             self.ik_chain.debug_display( line_length=0.5 )
@@ -188,10 +188,10 @@ if __name__ == "__main__":
         def set_ball_constraints( self ):
 
             # Set constraints:
-            self.ik_chain.set_ball_constraint( "Bone",
+            self.ik_chain.get_ik_joint( "Bone" ).set_ball_constraint(
                     min_ang=-math.pi*0.9, max_ang=math.pi*0.9 )
             for i in range(1,8):
-                self.ik_chain.set_ball_constraint( f"Bone.{i:03d}",
+                self.ik_chain.get_ik_joint( f"Bone.{i:03d}" ).set_ball_constraint(
                         min_ang=-math.pi*0.6, max_ang=math.pi*0.6 )
 
             self.ik_chain.debug_display( line_length=0.5 )

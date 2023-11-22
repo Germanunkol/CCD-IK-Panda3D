@@ -51,24 +51,6 @@ class IKChain():
                 return b
         raise Exception(f"Cannot find joint {joint_name}!")
 
-    def set_hinge_constraint( self, joint_name, axis, min_ang=-math.pi, max_ang=math.pi ):
-        b = self.get_ik_joint( joint_name )
-        b.axis = axis.normalized()
-        b.min_ang = min_ang
-        b.max_ang = max_ang
-
-        if self.debug_display_enabled:
-            self.debug_display()
-
-    def set_ball_constraint( self, joint_name, min_ang=-math.pi, max_ang=math.pi ):
-        b = self.get_ik_joint( joint_name )
-        b.axis = None
-        b.min_ang = min_ang
-        b.max_ang = max_ang
-
-        if self.debug_display_enabled:
-            self.debug_display()
-
     def update_ik( self, threshold = 1e-2, min_iterations=1, max_iterations=10 ):
 
         assert len(self.ik_joints) > 0, "IKChain requires at least one IKJoint for update_i_k() to work!"

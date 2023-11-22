@@ -26,3 +26,15 @@ class IKJoint:
 
     def set_static( self, static=True ):
         self.static = static
+
+    def set_hinge_constraint( self, axis, min_ang=-math.pi, max_ang=math.pi ):
+        self.axis = axis.normalized()
+        self.min_ang = min_ang
+        self.max_ang = max_ang
+
+    def set_ball_constraint( self, min_ang=-math.pi, max_ang=math.pi ):
+        self.axis = None
+        self.min_ang = min_ang
+        self.max_ang = max_ang
+
+

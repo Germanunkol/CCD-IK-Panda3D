@@ -62,10 +62,10 @@ if __name__ == "__main__":
                 # ... and add it to the chain:
                 ik_joint = self.ik_chain.add_joint( joint, control_node, parent_ik_joint=ik_joint )
                 if i < 4:
-                    self.ik_chain.set_hinge_constraint( name, LVector3f.unit_z(),
+                    self.ik_chain.get_ik_joint( name ).set_hinge_constraint( LVector3f.unit_z(),
                             min_ang=-math.pi*0.25, max_ang=math.pi*0.25 )
                 else:
-                    self.ik_chain.set_hinge_constraint( name, LVector3f.unit_y(),
+                    self.ik_chain.get_ik_joint( name ).set_hinge_constraint( LVector3f.unit_y(),
                             min_ang=-math.pi*0.25, max_ang=math.pi*0.25 )
 
             self.ik_chain.debug_display()
