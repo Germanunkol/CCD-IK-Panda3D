@@ -202,7 +202,7 @@ if __name__ == "__main__":
                 self.racket = None
             else:
                 self.racket = create_racket()
-                end_effector = self.ik_chain.get_bone( f"Bone.007" )
+                end_effector = self.ik_chain.get_ik_joint( f"Bone.007" )
                 self.racket.reparent_to( end_effector.control_node )
 
         def increase_annealing_exponent( self ):
