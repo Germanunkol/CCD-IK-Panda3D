@@ -105,11 +105,14 @@ class IKChain():
         if not self.end_effector:
             self.end_effector = self.ik_joints[-1].control_node.attach_new_node( "End_effector" )
 
+        assert self.root is not None and len(self.ik_joints) > 0, \
+                "Cannot compute inverse kinematics on empty chain"
+
         self.target_reached = False
         for i in range(max_iterations):
 
             if i >= min_iterations:
-                err = (self.target.get_pos(render)-self.end_effector.get_pos(render)).length()
+                err = (self.target.get_pos(self.root)-self.end_effector.get_pos(self.root)).length()
                 if err < threshold:
                     self.target_reached = True
                     break
@@ -318,7 +321,7 @@ class IKChain():
         for i in range(1,len(self.ik_joints)):
             b1 = self.ik_joints[i]
             b0 = self.ik_joints[i-1]
-            diff = b1.control_node.get_pos( render ) - b0.control_node.get_pos( render )
+            diff = b1.control_node.get_pos( self.root ) - b0.control_node.get_pos( self.root )
             length += diff.length()
         return length
 
