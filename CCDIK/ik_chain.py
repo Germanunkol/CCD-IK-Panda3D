@@ -7,13 +7,14 @@ from .vec_utils import *
 
 class IKChain():
 
-    def __init__( self, actor ):
+    def __init__( self ):
 
         # We need an actor to be able to control (and expose) joints. If it already exists,
         # likely because the model was loaded from a file - great then just use that.
         # However, if it doesn't exist, this means we first need to set up all the joints before
         # we create the actor, so keep it empty for now!
-        self.actor = actor
+        #self.actor = actor
+        self.root = None
 
         self.ik_joints = []
         self.target = None
@@ -38,6 +39,9 @@ class IKChain():
             control_node.reparent_to( parent_ik_joint.control_node )
 
         self.ik_joints.append(ik_joint)
+
+        if self.root == None:
+            self.root = control_node.get_parent()
 
         return ik_joint
 
@@ -120,7 +124,9 @@ class IKChain():
                 if ik_joint.parent:
                     parent_node = ik_joint.parent.control_node
                 else:
-                    parent_node = self.actor
+                    #parent_node = self.actor
+                    #parent_node = ik_joint.control_node.get_parent()
+                    parent_node = self.root
 
                 target = self.target.get_pos( ik_joint_node )
 
@@ -213,7 +219,10 @@ class IKChain():
                 parent_node = ik_joint.parent.control_node
             else:
                 # Otherwise the parent is the actor itself, i.e. the root of the skeleton
-                parent_node = self.actor
+                #parent_node = self.actor
+                # Use control node parent
+                #parent_node = ik_joint.control_node.get_parent()
+                parent_node = self.root
 
             # Again, use the parent's debug node rather than attaching stuff to the ik_node directly,
             # so we can remove the debug info easily later on by removing the debug node.
@@ -300,7 +309,7 @@ class IKChain():
                 ik_joint.debug_node.remove_node()
                 ik_joint.debug_node = None
 
-        root_debug_node = self.actor.find("Debug_display")
+        root_debug_node = self.root.find("Debug_display")
         if root_debug_node:
             root_debug_node.remove_node()
 

@@ -74,7 +74,7 @@ class Biped():
         ##################################
         # Set up left IK Chain:
 
-        self.ik_chain_leg_left = IKChain( au.get_actor() )
+        self.ik_chain_leg_left = IKChain()
 
         ik_joint = self.ik_chain_leg_left.add_joint( hip_l, au.get_control_node( hip_l.get_name() ) )
         ik_joint = self.ik_chain_leg_left.add_joint( upper_leg_l, au.get_control_node( upper_leg_l.get_name() ),
@@ -93,7 +93,7 @@ class Biped():
         ##################################
         # Set up right IK Chain:
 
-        self.ik_chain_leg_right = IKChain( au.get_actor() )
+        self.ik_chain_leg_right = IKChain()
 
         ik_joint = self.ik_chain_leg_right.add_joint( hip_r, au.get_control_node( hip_r.get_name() ) )
         ik_joint = self.ik_chain_leg_right.add_joint( upper_leg_r, au.get_control_node( upper_leg_r.get_name() ),

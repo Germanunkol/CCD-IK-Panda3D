@@ -50,7 +50,7 @@ if __name__ == "__main__":
             #######################################
             ## Create an IK chain from the armature:
 
-            self.ik_chain = IKChain( au.get_actor() )
+            self.ik_chain = IKChain()
             self.ik_chain.set_annealing_exponent( 4 )
 
             ik_joint = None

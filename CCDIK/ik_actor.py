@@ -72,7 +72,7 @@ class IKActor():
          
     def create_ik_chain( self, joint_names ):
         
-        chain = IKChain( actor=self.actor )
+        chain = IKChain()
 
         parent_ik_joint = None
         for joint_name in joint_names:
