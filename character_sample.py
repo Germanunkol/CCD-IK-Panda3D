@@ -11,6 +11,7 @@ class RiggedChar():
 
     def __init__( self, terrain ):
 
+        annealing_exponent = 6
 
         ##################################
         # Set up main body:
@@ -61,6 +62,7 @@ class RiggedChar():
 #        root_bone_control.set_hpr( 45, 45, 45 )
 
         self.ik_chain_leg_left = self.ik_actor.create_ik_chain( ["Hip.L", "UpperLeg.L", "LowerLeg.L", "Foot.L"] )
+        self.ik_chain_leg_left.set_annealing_exponent( annealing_exponent )
         #self.ik_chain_leg_left.set_static( "Hips" )
         self.ik_chain_leg_left.set_hinge_constraint( "Hip.L", axis=LVector3f.unit_z(),
                 min_ang=-math.pi*0.05, max_ang=math.pi*0.05 )
@@ -73,6 +75,7 @@ class RiggedChar():
 
 
         self.ik_chain_leg_right = self.ik_actor.create_ik_chain( ["Hip.R", "UpperLeg.R", "LowerLeg.R", "Foot.R"] )
+        self.ik_chain_leg_right.set_annealing_exponent( annealing_exponent )
         #self.ik_chain_leg_right.set_static( "Hips" )
         self.ik_chain_leg_right.set_hinge_constraint( "Hip.R", axis=LVector3f.unit_z(),
                 min_ang=-math.pi*0.05, max_ang=math.pi*0.05 )
@@ -91,6 +94,7 @@ class RiggedChar():
         # Set up arm chains:
 
         self.ik_chain_arm_left = self.ik_actor.create_ik_chain( ["Shoulder.L", "UpperArm.L", "LowerArm.L", "Hand.L"] )
+        self.ik_chain_arm_left.set_annealing_exponent( annealing_exponent )
         self.ik_chain_arm_left.set_hinge_constraint( "Shoulder.L", axis=LVector3f.unit_z(),
                 min_ang=math.pi*0.05, max_ang=math.pi*0.05 )
         self.ik_chain_arm_left.set_hinge_constraint( "UpperArm.L", axis=LVector3f.unit_y(),
@@ -101,6 +105,7 @@ class RiggedChar():
                 min_ang=-math.pi*0.3, max_ang=math.pi*0.3 )
 
         self.ik_chain_arm_right = self.ik_actor.create_ik_chain( ["Shoulder.R", "UpperArm.R", "LowerArm.R", "Hand.R"] )
+        self.ik_chain_arm_right.set_annealing_exponent( annealing_exponent )
         self.ik_chain_arm_right.set_hinge_constraint( "Shoulder.R", axis=LVector3f.unit_z(),
                 min_ang=math.pi*0.05, max_ang=math.pi*0.05 )
         self.ik_chain_arm_right.set_hinge_constraint( "UpperArm.R", axis=LVector3f.unit_y(),

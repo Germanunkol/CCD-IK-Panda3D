@@ -8,6 +8,11 @@ class Biped():
 
     def __init__( self ):
 
+        # Change this to a higher number to control which joint is moved more:
+        # - 0: The tip (lower legs) are rotated the most during movement
+        # - Higher values (eg. 3 or 4): The hip is moved more during movement
+        annealing_exponent = 0
+
         ##################################
         # Set up main body:
 
@@ -75,6 +80,7 @@ class Biped():
         # Set up left IK Chain:
 
         self.ik_chain_leg_left = IKChain()
+        self.ik_chain_leg_left.set_annealing_exponent( annealing_exponent )
 
         ik_joint = self.ik_chain_leg_left.add_joint( hip_l, au.get_control_node( hip_l.get_name() ) )
         ik_joint = self.ik_chain_leg_left.add_joint( upper_leg_l, au.get_control_node( upper_leg_l.get_name() ),
@@ -94,6 +100,7 @@ class Biped():
         # Set up right IK Chain:
 
         self.ik_chain_leg_right = IKChain()
+        self.ik_chain_leg_right.set_annealing_exponent( annealing_exponent )
 
         ik_joint = self.ik_chain_leg_right.add_joint( hip_r, au.get_control_node( hip_r.get_name() ) )
         ik_joint = self.ik_chain_leg_right.add_joint( upper_leg_r, au.get_control_node( upper_leg_r.get_name() ),
