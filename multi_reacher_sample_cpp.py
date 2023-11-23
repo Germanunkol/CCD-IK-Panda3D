@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
             num_rows = int(math.sqrt(num_reachers))
             num_cols = num_reachers/num_rows + 1
-            num_joints = 30
+            num_joints = 20
             for j in range(num_reachers):
 
                 #######################################
@@ -45,7 +45,7 @@ if __name__ == "__main__":
                 
                 joint = None
                 for i in range( num_joints ):
-                    offset_length = 0.5
+                    offset_length = 0.2
                     if i == 0:
                         offset_length = 0.1
                     joint = au.create_joint( f"joint{i}",
