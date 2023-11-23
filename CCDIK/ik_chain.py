@@ -53,11 +53,8 @@ class IKChain():
 
     def update_ik( self, threshold = 1e-2, min_iterations=1, max_iterations=10 ):
 
-        assert len(self.ik_joints) > 0, "IKChain requires at least one IKJoint for update_i_k() to work!"
-
         # Solve the IK chain for the IK nodes:
-        if self.target:
-            self.inverse_kinematics_cCD( threshold, min_iterations, max_iterations )
+        self.inverse_kinematics_cCD( threshold, min_iterations, max_iterations )
 
         # Copy the data from the IK chain to the actual bones.
         # This will end up affecting the actual mesh.
@@ -78,20 +75,20 @@ class IKChain():
         """
         self.annealing_exponent = max( exponent, 0 )
 
-    def inverse_kinematics_cCD( self, threshold = 1e-2, min_iterations=1, max_iterations=10 ):
+    def inverse_kinematics_cCD( self, threshold = 1e-2, min_iterations=0, max_iterations=10 ):
+
+        assert self.root is not None and len(self.ik_joints) > 0, \
+                "IK only works when chain has at least one joint!"
+
+        assert self.target is not None, "IK target must be set!"
 
         if not self.end_effector:
             self.end_effector = self.ik_joints[-1].control_node.attach_new_node( "End_effector" )
 
-        assert self.root is not None and len(self.ik_joints) > 0, \
-                "Cannot compute inverse kinematics on empty chain"
-
-        assert self.target is not None, "Cannot comput inverse kinematics before target is set"
-
         self.target_reached = False
         for i in range(max_iterations):
 
-            if i >= min_iterations:
+            if i > min_iterations:
                 err = (self.target.get_pos(self.root)-self.end_effector.get_pos(self.root)).length()
                 if err < threshold:
                     self.target_reached = True

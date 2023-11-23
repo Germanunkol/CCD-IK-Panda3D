@@ -10,6 +10,7 @@ Features:
 - Ball joints
 - Uses Panda3D's Bone system and can be added to an existing, rigged mesh. See usage hints below.
 - Pure python, no dependencies beyond Panda3D
+- *New:* The core IK solver can be run in C++, which is a bit faster. This is entirely optional, and the interface is almost exactly the same, only the setup is slightly more involved and requires compiling Panda3D from source. See "C++ Version" below.
 
 Not implemented:
 ----------------
@@ -146,11 +147,26 @@ For every bone (in edit mode), do the following:
 
 
 Further notes and hints:
---------
+--------------------------
 - CCD tends to rotate the last segments (the ones close to the end effector) much more than those close to the root, which can be undesirable. To avoid this, an annealing strategy should be implemented, which weighs the movement of bones depending on their distance to the root.
 - Ball joints (rotAxis=None) currently have no way of limiting a bone's "roll" angle. This means your bones may spin uncontrollably around their own axis.
 - When animating something like a leg, make sure target is usually reached, otherwise you loose control
 - In all my tests, a bone was never part of more than one chain. I don't know what happens if you try to control a bone via multiple chains - if you try it, let me know!
+
+C++ Version
+--------------
+
+The IKChain and IKJoint classes have also been ported to C++. Note that the character/mesh/chain setup (which is usally not time-critical) is performed by the same python code as above. The only major difference is that when you use the C++ version you need to build it alongside Panda3D (see below) and then, instead of `from CCDIK.ik_chain import IKChain` you use `from panda3d.ccdik import IKChain`. The interfaces are otherwise (almost entirely) the same.
+
+1. Download Panda3D's source code: https://github.com/panda3d/panda3d Tested with version 1.11.0
+2. Copy (or symlink) the `cpp/ccdik` directory (of this CCDIK repo) to the path `panda/src/` (of the Panda3D repo). The resulting path should then be: `panda3d/source/panda/src/ccdik`.
+3. To include this ccdik directory during Panda's compilation, edit the file `panda3d/panda/CMakeLists.txt` in the Panda source code. (Note this is _not_ the top-level CMakeLists.txt, but the one in the "panda" subfolder). Add the `src/ccdik` directory to the list of subdirectories, like this: `add_subdirectory(src/ccdik)`
+4. Follow the instructions to build Panda3D with cmake. See Readme here: https://github.com/panda3d/panda3d/tree/master/cmake
+5. Done. If you've installed the new Panda3D, you should be good to go. You can also choose not to install it, but then you need to add the build directory to your python path to be able to find it, for example: `export PYTHONPATH=/home/me/Software/Panda3D/build/:$PYTHONPATH
+
+Now you can run the cpp example: `python3 multi_reacher_sample_cpp.py`, which uses the C++ backend. Try using the  --num paramenter to add more IK chains!
+
+(Note: At the time of writing the interfaces still differ a bit, and the debug display is incomplete in the C++ version. Hope to fix this in the future.)
 
 License:
 ---------------------------
