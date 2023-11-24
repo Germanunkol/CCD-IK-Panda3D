@@ -59,6 +59,13 @@ IKJoint* IKChain::get_ik_joint( std::string joint_name )
   return nullptr;
 }
 
+IKJoint* IKChain::get_ik_joint( unsigned int id )
+{
+  assert( id < this->ik_joints.size() );
+  return this->ik_joints[id];
+}
+
+
 void IKChain::update_ik( float threshold, int min_iterations, int max_iterations )
 {
   // Solve IK chain for current target:
@@ -79,15 +86,14 @@ void IKChain::inverse_kinematics_ccd( float threshold, int min_iterations, int m
 
   assert( this->target && "IK target must be set!" );
 
-  if( ! this->end_effector )
-    this->end_effector = this->ik_joints.back()->get_control_node().attach_new_node( "End_effector" );
+  NodePath end_effector = this->get_end_effector();
 
   this->target_reached = false;
   for( int i = 0; i < max_iterations; i++ )
   {
     if( i > min_iterations )
     {
-      float err = (this->target.get_pos( this->root ) - this->end_effector.get_pos( this->root )).length();
+      float err = (this->target.get_pos( this->root ) - end_effector.get_pos( this->root )).length();
       if( err < threshold )
       {
         this->target_reached = true;
@@ -118,7 +124,7 @@ void IKChain::inverse_kinematics_ccd( float threshold, int min_iterations, int m
       // Then get the position of this node in local space always (0,0,0) and the 
       // current position of the end effector in current space:
       //LPoint3 pos = LPoint3( 0,0,0 );
-      LPoint3 ee = this->end_effector.get_pos( ik_joint_node );
+      LPoint3 ee = end_effector.get_pos( ik_joint_node );
 
       // Get the direction to the target and the direction to the end effector
       // (all still in local space). These are the two vectors we want to align,
@@ -256,4 +262,22 @@ void IKChain::remove_debug_display()
   }
 }
 
+float IKChain::calc_length()
+{
+  float length = 0;
+  for( size_t i = 1; i < this->ik_joints.size(); i++ )
+  {
+    IKJoint* b1 = this->ik_joints[i];
+    IKJoint* b0 = this->ik_joints[i-1];
+    LVector3f diff = b1->get_control_node().get_pos( this->root ) -
+      b0->get_control_node().get_pos( this->root );
+    length += diff.length();
+  }
+  return length;
+}
 
+NodePath IKChain::get_end_effector()
+{
+  assert( this->ik_joints.size() > 0 );
+  return this->ik_joints.back()->get_control_node();
+}
