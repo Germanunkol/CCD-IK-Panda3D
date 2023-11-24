@@ -302,4 +302,8 @@ class IKChain():
             length += diff.length()
         return length
 
+    def get_end_effector( self ):
+        assert len(self.ik_joints) > 0
+        return self.ik_joints[-1].get_control_node()
+
 
