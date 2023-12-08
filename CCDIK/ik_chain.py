@@ -291,8 +291,9 @@ class IKChain():
         for i in range(len(self.ik_joints)):
             ik_joint = self.ik_joints[i]
             if hasattr( ik_joint, "debug_node" ):
-                ik_joint.debug_node.remove_node()
-                ik_joint.debug_node = None
+                if ik_joint.debug_node is not None:
+                    ik_joint.debug_node.remove_node()
+                    ik_joint.debug_node = None
 
         root_debug_node = self.root.find("Debug_display")
         if root_debug_node:
