@@ -43,7 +43,7 @@ PUBLISHED:
 
   void update_ik( float threshold = 1e-2, int min_iterations = 0, int max_iterations = 10 );
 
-  void debug_display( float line_length=0.2, float thickness=2 );
+  void debug_display( float line_length=0.2, float thickness=2, bool draw_constraints = true );
 
   void remove_debug_display();
 

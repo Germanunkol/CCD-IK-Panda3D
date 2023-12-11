@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     class MyApp(ShowBase):
 
-        def __init__(self, num_reachers = 1000 ):
+        def __init__(self, num_reachers = 1000, num_joints = 10 ):
             ShowBase.__init__(self)
             base.disable_mouse()
             base.set_frame_rate_meter(True)
@@ -43,7 +43,7 @@ if __name__ == "__main__":
                 au = ArmatureUtils()
                 
                 joint = None
-                for i in range( 6 ):
+                for i in range( num_joints ):
                     offset_length = 0.5
                     if i == 0:
                         offset_length = 0.1
@@ -63,7 +63,7 @@ if __name__ == "__main__":
                 ik_chain.set_annealing_exponent( 4 )
 
                 ik_joint = None
-                for i in range( 6 ):
+                for i in range( num_joints ):
                     name = f"joint{i}"
                     # Now we can conveniently retrieve everything we need from the Armature_utils...
                     joint = au.get_joint( name )
@@ -72,12 +72,14 @@ if __name__ == "__main__":
                     ik_joint = ik_chain.add_joint( joint, control_node, parent_ik_joint=ik_joint )
                     if i < 4:
                         ik_chain.get_ik_joint( name ).set_hinge_constraint( LVector3f.unit_z(),
-                                min_ang=-math.pi*0.25, max_ang=math.pi*0.25 )
+                                #min_ang=-math.pi*0.25, max_ang=math.pi*0.25 )
+                                min_ang=0.1, max_ang=0.5 )
                     else:
                         ik_chain.get_ik_joint( name ).set_hinge_constraint( LVector3f.unit_y(),
-                                min_ang=-math.pi*0.25, max_ang=math.pi*0.25 )
+                                #min_ang=-math.pi*0.25, max_ang=math.pi*0.25 )
+                                min_ang=0.1, max_ang=0.5 )
 
-                ik_chain.debug_display( draw_constraints = False )
+                ik_chain.debug_display()
                 self.ik_chains.append( ik_chain )
 
                 col = int( j / num_rows )
@@ -193,7 +195,8 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument( "--num", type=int, default = 100 )
+    parser.add_argument( "--num_joints", type=int, default = 10 )
     args = parser.parse_args()
 
-    app = MyApp( args.num )
+    app = MyApp( args.num, args.num_joints )
     app.run()

@@ -114,6 +114,10 @@ IKChain.set_hinge_constraint( joint_name, axis, min_ang, max_ang )
 
 # Create Ball joint:
 # minAng and maxAng should be in radians (and probably in the range from -pi to pi).
+# Note: roll axis is not controlled for ball joints, i.e. it might rotate
+# around the roll axis uncontrollably. Might be a task for the future.
+# (The problem is that there's no simple way to know what the roll should
+# be for a ball joint as there are an infinite number of valid solutions.)
 IKChain.set_ball_constraint( joint_name, min_ang, min_ang )
 ```
 
