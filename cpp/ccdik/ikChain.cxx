@@ -194,7 +194,7 @@ void IKChain::inverse_kinematics_ccd( float threshold, int min_iterations, int m
   }
 }
 
-void IKChain::debug_display( float line_length, float thickness, bool draw_constraints )
+void IKChain::debug_display( float line_length, float thickness, bool draw_constraints, bool x_ray )
 {
   this->remove_debug_display();
   this->debug_display_enabled = true;
@@ -285,6 +285,12 @@ void IKChain::debug_display( float line_length, float thickness, bool draw_const
         }
         parent_debug_node.attach_new_node(lines_arc.create());
       } 
+    }
+
+    if( x_ray )
+    {
+      x_ray_node( parent_debug_node );
+      x_ray_node( debug_node );
     }
   }
 }

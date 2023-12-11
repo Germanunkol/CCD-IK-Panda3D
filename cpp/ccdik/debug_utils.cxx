@@ -30,3 +30,12 @@ GeomNode* create_axes( float size, bool bothways, float thickness )
 
   return lines.create();
 }
+
+void x_ray_node( NodePath node )
+{
+  node.set_bin("fixed", 0);
+  node.set_depth_test(false);
+  node.set_depth_write(false);
+}
+
+
