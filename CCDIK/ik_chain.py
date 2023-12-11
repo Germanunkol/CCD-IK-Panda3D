@@ -45,11 +45,16 @@ class IKChain():
 
         return ik_joint
 
-    def get_ik_joint( self, joint_name ):
+    def get_ik_joint( self, joint_id ):
+        if type(joint_id) == int:
+            return self.ik_joints[joint_id]
         for b in self.ik_joints:
-            if b.joint.get_name() == joint_name:
+            if b.joint.get_name() == joint_id:
                 return b
-        raise Exception(f"Cannot find joint {joint_name}!")
+        raise Exception(f"Cannot find joint {joint_id}!")
+
+    def get_num_ik_joints( self ):
+        return len(self.ik_joints)
 
     def update_ik( self, threshold = 1e-2, min_iterations=1, max_iterations=10 ):
 
