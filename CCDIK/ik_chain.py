@@ -61,6 +61,9 @@ class IKChain():
         for ik_joint in self.ik_joints:
             ik_joint.control_node.set_quat( ik_joint.control_node.get_quat() )
 
+    def get_annealing_exponent( self ):
+        return self.annealing_exponent
+
     def set_annealing_exponent( self, exponent ):
         """ Set the annealing strength
 

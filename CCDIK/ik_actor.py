@@ -1,5 +1,6 @@
 from direct.actor.Actor import Actor
 from .ik_chain import IKChain
+#from panda3d.ccdik import IKChain
 
 class IKActor():
 
