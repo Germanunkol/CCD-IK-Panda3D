@@ -206,11 +206,11 @@ if __name__ == "__main__":
                 self.racket.reparent_to( end_effector.control_node )
 
         def increase_annealing_exponent( self ):
-            cur = self.ik_chain.annealing_exponent
+            cur = self.ik_chain.get_annealing_exponent()
             self.ik_chain.set_annealing_exponent( cur + 1 )
             self.update_info()
         def decrease_annealing_exponent( self ):
-            cur = self.ik_chain.annealing_exponent
+            cur = self.ik_chain.get_annealing_exponent()
             self.ik_chain.set_annealing_exponent( cur - 1 )
             self.update_info()
 
@@ -227,7 +227,7 @@ if __name__ == "__main__":
             for k, v in self.info_texts.items():
                 v.remove_node()
             self.info_texts["annealing"] = \
-                    info( f"Annealing exponent: {self.ik_chain.annealing_exponent}", 1 )
+                    info( f"Annealing exponent: {self.ik_chain.get_annealing_exponent()}", 1 )
 
     app = MyApp()
     app.run()

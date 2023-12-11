@@ -294,6 +294,20 @@ def shortest_rotation( a, b ):
     q.normalize()
     return q
 
+
+def get_perpendicular_vec( vec ):
+    vec = vec.normalized()
+    vec2 = LVector3f.unit_y()
+
+    ang = vec.angle_deg( vec2 )
+    if ang < 0.1 or ang > 179.9:       # Parallel?
+        # Choose a different vector:
+        vec2 = LVector3f.unit_x()
+
+    return vec.cross(vec2).normalized()
+
+
+
 if __name__ == "__main__":
 
     from panda3d.core import LVector3f

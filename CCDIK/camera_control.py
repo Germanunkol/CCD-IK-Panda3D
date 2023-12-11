@@ -8,7 +8,7 @@ from .utils import *
 
 class CameraControl:
 
-    def __init__( self, node, mouse_watcher_node, speed=0.2 ):
+    def __init__( self, node, mouse_watcher_node, speed=0.8 ):
 
         self.node = node
 
@@ -94,7 +94,7 @@ class CameraControl:
             quat.set_from_axis_angle( self.heading, LVector3f.unit_z())
             rotated = quat.xform( LVector3f( -forward, sideways, 0 ))
 
-            self.heading_node.set_pos( self.heading_node.get_pos() - rotated )
+            self.heading_node.set_pos( self.heading_node.get_pos() - rotated*globalClock.get_dt() )
 
         
         #self.ang_y = max( 0, min( math.pi*0.4, self.ang_y ) )

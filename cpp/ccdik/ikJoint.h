@@ -24,9 +24,26 @@ PUBLISHED:
   void set_control_node( NodePath control_node ) { this->control_node = control_node; }
   std::string get_name();
 
+  /* Set the constraint on this joint to a "hinge" constraint.
+  
+  Note: Constraints on the final joint in a chain (i.e. the end effector) are
+      currently ignored!
+  */
   void set_hinge_constraint( LVector3f axis, float min_ang = -M_PI, float max_ang = M_PI );
+
+  /* Set the constraint on this joint to a "ball" constraint.
+
+  Note: roll axis is not controlled for ball joints, i.e. it might rotate
+  around the roll axis uncontrollably. Might be a task for the future.
+  The problem is that there's no simple way to know what the roll should
+  be for a ball joint as there are an infinite number of valid solutions.
+
+  Note: Constraints on the final joint in a chain (i.e. the end effector) are
+  currently ignored!
+  */
   void set_ball_constraint( float min_ang = -M_PI, float max_ang = M_PI );
 
+  /* Will return true is this is a hinge constraint */ 
   bool get_has_rotation_axis() { return this->has_rotation_axis; }
   LVector3f get_axis() { return this->axis; }
 

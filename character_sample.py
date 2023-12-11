@@ -456,7 +456,7 @@ if __name__ == "__main__":
             # Set up Camera and input:
 
             #focus_node = render.attach_new_node( "Camera_focus_node" )
-            self.cam_control = CameraControl( camera, self.mouseWatcherNode, speed = 0.02 )
+            self.cam_control = CameraControl( camera, self.mouseWatcherNode, speed = 1 )
             self.cam_control.focus_point = LVector3f( 0, 0, 1 )
             
             self.taskMgr.add( self.cam_control.move_camera, "Move_camera_task")

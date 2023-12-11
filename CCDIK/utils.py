@@ -216,18 +216,6 @@ def get_rotation_between( src, dest, fallback_axis=LVector3f.zero() ):
         
     return q
 
-def get_perpendicular_vec( vec ):
-    vec = vec.normalized()
-    vec2 = LVector3f.unit_y()
-
-    ang = vec.angle_deg( vec2 )
-    if ang < 0.1 or ang > 179.9:       # Parallel?
-        # Choose a different vector:
-        vec2 = LVector3f.unit_x()
-
-    return vec.cross(vec2).normalized()
-
-
 # Macro-like function used to reduce the amount to code needed to create the
 # on screen instructions. Shamelessly stolen from the Panda3D samples.
 def label( text, line ):

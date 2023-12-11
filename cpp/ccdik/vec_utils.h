@@ -9,4 +9,7 @@ void swing_twist_decomposition(
     LVector3f twist_axis,
     LQuaternionf &swing,
     LQuaternionf &twist );
+
+LVector3f get_perpendicular_vec( LVector3f vec );
+
 #endif

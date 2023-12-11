@@ -160,6 +160,7 @@ void IKChain::inverse_kinematics_ccd( float threshold, int min_iterations, int m
 
       float rot_ang = q_new.get_angle_rad();
 
+
       // Valid rotation?
       if( rot_axis.length_squared() > 1e-3 && !std::isnan( rot_ang ) and abs( rot_ang ) > 0 )
       {
@@ -193,7 +194,7 @@ void IKChain::inverse_kinematics_ccd( float threshold, int min_iterations, int m
   }
 }
 
-void IKChain::debug_display( float line_length, float thickness )
+void IKChain::debug_display( float line_length, float thickness, bool draw_constraints, bool x_ray )
 {
   this->remove_debug_display();
   this->debug_display_enabled = true;
@@ -222,7 +223,7 @@ void IKChain::debug_display( float line_length, float thickness )
                              ik_joint->get_parent()->get_control_node() : \
                              this->root;
 
-    // Again, use the parent's debug node rather than attaching stuff to the ik_node directly,
+    // Again, use the parent's debug node rather than attaching stuff to the parent directly,
     // so we can remove the debug info easily later on by removing the debug node.
     assert( parent_node );
     NodePath parent_debug_node = parent_node.find("Debug_display");
@@ -241,6 +242,56 @@ void IKChain::debug_display( float line_length, float thickness )
     lines.draw_to( my_pos );
     GeomNode* geom = lines.create();
     parent_debug_node.attach_new_node( (PandaNode*)geom );
+
+    if( draw_constraints )
+    {
+      if( ik_joint->get_has_rotation_axis() )
+      {
+        LVector3f l = -get_perpendicular_vec( ik_joint->get_axis() )*line_length;
+
+        LineSegs lines_rot_axis;
+        lines_rot_axis.set_thickness( thickness );
+        lines_rot_axis.set_color( 0.6, 0.3, 0.3 );
+        lines_rot_axis.move_to( 0, 0, 0 );
+        lines_rot_axis.draw_to( l );
+        debug_node.attach_new_node( lines_rot_axis.create() );
+
+        LineSegs lines_bounds;
+        lines_bounds.set_color( 0.8, 0.1, 0.2 );
+        lines_bounds.set_thickness( thickness );
+        LQuaternionf q_min;
+        q_min.set_from_axis_angle_rad( ik_joint->get_min_ang(), ik_joint->get_axis() );
+        LQuaternionf q_max;
+        q_max.set_from_axis_angle_rad( ik_joint->get_max_ang(), ik_joint->get_axis() );
+        lines_bounds.move_to( my_pos );
+        lines_bounds.draw_to( my_pos + q_min.xform( l ) );
+        lines_bounds.move_to( my_pos );
+        lines_bounds.draw_to( my_pos + q_max.xform( l ) );
+        parent_debug_node.attach_new_node( lines_bounds.create() );
+
+        LineSegs lines_arc;
+        lines_arc.set_color( 0.6, 0.3, 0.3 );
+        lines_arc.set_thickness( thickness );
+        lines_arc.move_to( my_pos + q_min.xform( l*0.9 ) );
+        float ang = ik_joint->get_min_ang();
+        while( ang < ik_joint->get_max_ang() )
+        {
+          ang += M_PI*0.1;
+          if( ang > ik_joint->get_max_ang() )
+              ang = ik_joint->get_max_ang();
+          LQuaternionf q;
+          q.set_from_axis_angle_rad( ang, ik_joint->get_axis() );
+          lines_arc.draw_to( my_pos + q.xform( l*0.9 ) );
+        }
+        parent_debug_node.attach_new_node(lines_arc.create());
+      } 
+    }
+
+    if( x_ray )
+    {
+      x_ray_node( parent_debug_node );
+      x_ray_node( debug_node );
+    }
   }
 }
 

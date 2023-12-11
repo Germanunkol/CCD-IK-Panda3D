@@ -66,6 +66,9 @@ class IKChain():
         for ik_joint in self.ik_joints:
             ik_joint.control_node.set_quat( ik_joint.control_node.get_quat() )
 
+    def get_annealing_exponent( self ):
+        return self.annealing_exponent
+
     def set_annealing_exponent( self, exponent ):
         """ Set the annealing strength
 
@@ -209,7 +212,7 @@ class IKChain():
                 #parent_node = ik_joint.control_node.get_parent()
                 parent_node = self.root
 
-            # Again, use the parent's debug node rather than attaching stuff to the ik_node directly,
+            # Again, use the parent's debug node rather than attaching stuff to the parent directly,
             # so we can remove the debug info easily later on by removing the debug node.
             parent_debug_node = parent_node.find("Debug_display")
             if not parent_debug_node:
@@ -230,7 +233,7 @@ class IKChain():
             # These need to be drawn in parent space (since my rotation is done in parent space)
             if draw_constraints:
                 if ik_joint.axis:
-                    l = get_perpendicular_vec( ik_joint.axis )*line_length
+                    l = -get_perpendicular_vec( ik_joint.axis )*line_length
 
                     lines = LineSegs()
                     lines.set_color( 0.6, 0.3, 0.3 )
@@ -277,7 +280,6 @@ class IKChain():
                     lines.draw_to( my_pos + ik_joint.axis*0.1 )
                     geom = lines.create()
                     constraints_axis = parent_node.attach_new_node( geom )
-                    print("drawing axis", parent_node)
 
             if x_ray:
                 ik_joint.debug_node.set_bin("fixed", 0)

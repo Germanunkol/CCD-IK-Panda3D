@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     class MyApp(ShowBase):
 
-        def __init__(self, num_reachers = 1000 ):
+        def __init__(self, num_reachers = 1000, num_joints = 10 ):
             ShowBase.__init__(self)
             base.disable_mouse()
             base.set_frame_rate_meter(True)
@@ -36,7 +36,6 @@ if __name__ == "__main__":
 
             num_rows = int(math.sqrt(num_reachers))
             num_cols = num_reachers/num_rows + 1
-            num_joints = 20
             for j in range(num_reachers):
 
                 #######################################
@@ -45,7 +44,7 @@ if __name__ == "__main__":
                 
                 joint = None
                 for i in range( num_joints ):
-                    offset_length = 0.2
+                    offset_length = 0.5
                     if i == 0:
                         offset_length = 0.1
                     joint = au.create_joint( f"joint{i}",
@@ -78,7 +77,7 @@ if __name__ == "__main__":
                         ik_chain.get_ik_joint( name ).set_hinge_constraint( LVector3f.unit_y(),
                                 min_ang=-math.pi*0.25, max_ang=math.pi*0.25 )
 
-                ik_chain.debug_display( 0.05 )
+                ik_chain.debug_display()
                 self.ik_chains.append( ik_chain )
 
                 col = int( j / num_rows )
@@ -194,7 +193,8 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument( "--num", type=int, default = 100 )
+    parser.add_argument( "--num_joints", type=int, default = 10 )
     args = parser.parse_args()
 
-    app = MyApp( args.num )
+    app = MyApp( args.num, args.num_joints )
     app.run()
