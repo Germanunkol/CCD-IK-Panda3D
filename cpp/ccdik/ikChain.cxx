@@ -104,8 +104,7 @@ void IKChain::inverse_kinematics_ccd( float threshold, int min_iterations, int m
     for( size_t j = 0; j < this->ik_joints.size() -1; j++ )
     {
       // Iterate backwards:
-      IKJoint* ik_joint = this->ik_joints[this->ik_joints.size() - j - 1];
-
+      IKJoint* ik_joint = this->ik_joints[this->ik_joints.size() - j - 2];
 
       // Skip over static joints:
       if( ik_joint->get_static() )
