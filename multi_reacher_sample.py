@@ -1,8 +1,8 @@
 import math
 
-from CCDIK.ik_chain import IKChain
-from CCDIK.armature_utils import ArmatureUtils
-from CCDIK.utils import *
+from src.CCDIK.ik_chain import IKChain
+from src.CCDIK.armature_utils import ArmatureUtils
+from src.CCDIK.utils import *
 
 
 if __name__ == "__main__":
